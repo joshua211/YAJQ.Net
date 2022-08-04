@@ -1,6 +1,8 @@
-﻿namespace Fastjob.Core.Interfaces;
+﻿using Fastjob.Core.Common;
+
+namespace Fastjob.Core.Interfaces;
 
 public interface IJobQueue
 {
-     Task EnqueueJob(Delegate d, params object[] args);
+     Task<ExecutionResult<Success>> EnqueueJob(Delegate d, params object[] args);
 }

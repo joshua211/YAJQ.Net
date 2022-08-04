@@ -8,17 +8,14 @@ namespace Fastjob.Core.JobHandler;
 public class DefaultJobHandler : IJobHandler
 {
     private readonly ILogger<DefaultJobHandler> logger;
-    private readonly IServiceProvider provider;
-    private readonly IModuleHelper moduleHelper;
     private readonly IJobProcessor processor;
     private readonly IJobStorage storage;
+    private int index = 0;
 
     public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IServiceProvider provider, IModuleHelper moduleHelper,
         IJobStorage storage)
     {
         this.logger = logger;
-        this.provider = provider;
-        this.moduleHelper = moduleHelper;
         this.storage = storage;
 
         processor = new DefaultJobProcessor(moduleHelper, provider, logger);
@@ -28,18 +25,26 @@ public class DefaultJobHandler : IJobHandler
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(1000, cancellationToken);
-
-            var id = await storage.GetNextJobIdAsync();
-            if (string.IsNullOrEmpty(id))
+            var result = await storage.GetNextJobAsync();
+            if (!result.WasSuccess)
+            {
+                await Task.Delay(1000, cancellationToken);
                 continue;
+            }
 
-            var result = await storage.TryMarkJobAsync(id, processor.ProcessorId);
+            result = await storage.TryMarkAndGetJobAsync(result.Value.Id, processor.ProcessorId);
             if (!result.WasSuccess)
                 continue;
 
             var descriptor = result.Value.Descriptor;
-            await processor.ProcessJobAsync(descriptor, cancellationToken);
+            var processingResult = await processor.ProcessJobAsync(descriptor, cancellationToken);
+            if (!processingResult.WasSuccess)
+            {
+                //TODO handle errors maybe?
+                continue;
+            }
+
+            await storage.RemoveJobAsync(result.Value.Id);
         }
     }
 }

@@ -22,6 +22,8 @@ public record struct ExecutionResult<TValue>
 
     public static implicit operator ExecutionResult<TValue>(TValue value) => new (value);
     public static implicit operator ExecutionResult<TValue>(Error error) => new(error);
+
+    public static ExecutionResult<Success> Success => new ExecutionResult<Success>(new Success());
 }
 
 public readonly record struct Success;

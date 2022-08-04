@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Core", "Fastjob.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Persistence.Memory", "Fastjob.Persistence.Memory\Fastjob.Persistence.Memory.csproj", "{D77F6F57-F44F-44B8-98E6-359B4EF9E87A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Tests.Unit", "..\tests\Fastjob.Tests.Unit\Fastjob.Tests.Unit.csproj", "{D2761F5A-D587-4877-8A63-2B487DB18A7A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{D77F6F57-F44F-44B8-98E6-359B4EF9E87A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D77F6F57-F44F-44B8-98E6-359B4EF9E87A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D77F6F57-F44F-44B8-98E6-359B4EF9E87A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2761F5A-D587-4877-8A63-2B487DB18A7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2761F5A-D587-4877-8A63-2B487DB18A7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2761F5A-D587-4877-8A63-2B487DB18A7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2761F5A-D587-4877-8A63-2B487DB18A7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

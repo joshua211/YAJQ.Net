@@ -7,33 +7,46 @@ namespace Fastjob.Persistence.Memory;
 
 public class MemoryJobStorage : IJobStorage
 {
-    private static readonly BlockingCollection<PersistedJob> List = new();
+    private static ConcurrentDictionary<string, PersistedJob> Storage =
+        new ConcurrentDictionary<string, PersistedJob>();
 
-    public Task AddJobAsync(IJobDescriptor descriptor, CancellationToken token = default)
+    private static ConcurrentQueue<PersistedJob> Queue = new ConcurrentQueue<PersistedJob>();
+
+    public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, CancellationToken token = default)
     {
         var jobId = Guid.NewGuid().ToString();
-        List.TryAdd(new PersistedJob(jobId, descriptor, string.Empty));
+        var job = new PersistedJob(jobId, descriptor, string.Empty);
+        var result = Storage.TryAdd(jobId, job);
+        if (!result)
+            return Error.StorageError();
 
-        return Task.CompletedTask;
+        Queue.Enqueue(job);
+
+        return new ExecutionResult<string>(jobId);
     }
 
-    public Task<string> GetNextJobIdAsync()
+    public async Task<ExecutionResult<IPersistedJob>> GetNextJobAsync()
     {
-        var nextJob = List.FirstOrDefault();
+        if (!Queue.Any())
+            Queue = new ConcurrentQueue<PersistedJob>(Storage.Values);
 
-        return Task.FromResult(nextJob is null ? string.Empty : nextJob.Id);
+        var result = Queue.TryDequeue(out var nextJob);
+        if (!result)
+            return Error.NotFound();
+
+        return nextJob;
     }
 
     public Task<ExecutionResult<IPersistedJob>> GetJobAsync(string id)
     {
-        var job = List.FirstOrDefault(j => j.Id == id);
-        if (job is null)
+        var result = Storage.TryGetValue(id, out var job);
+        if (!result)
             return Task.FromResult(new ExecutionResult<IPersistedJob>(Error.NotFound()));
 
         return Task.FromResult(new ExecutionResult<IPersistedJob>(job as IPersistedJob));
     }
 
-    public async Task<ExecutionResult<IPersistedJob>> TryMarkJobAsync(string jobId, string concurrencyMark)
+    public async Task<ExecutionResult<IPersistedJob>> TryMarkAndGetJobAsync(string jobId, string concurrencyMark)
     {
         var result = await GetJobAsync(jobId);
         if (!result.WasSuccess)
@@ -45,5 +58,22 @@ public class MemoryJobStorage : IJobStorage
         result.Value.ConcurrencyTag = concurrencyMark;
 
         return result;
+    }
+
+    public async Task<ExecutionResult<Success>> RemoveJobAsync(string jobId)
+    {
+        var result = Storage.TryRemove(jobId, out var _);
+        if (!result)
+            return Error.NotFound();
+
+        return new Success();
+    }
+
+    public Task<ExecutionResult<Success>> ClearAsync()
+    {
+        Storage.Clear();
+        Queue.Clear();
+
+        return Task.FromResult(ExecutionResult<Success>.Success);
     }
 }

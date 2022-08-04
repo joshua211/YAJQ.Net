@@ -3,12 +3,31 @@
 public struct Error
 {
     public string Description { get; private set; }
+    public int Code { get; private set; }
 
-    public Error(string description)
+    public Error(string description, int code)
     {
         Description = description;
+        Code = code;
     }
 
-    public static Error AlreadyMarked() => new Error("The requested Job has already been marked");
-    public static Error NotFound() => new Error("The requested Job was not found");
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Error error)
+            return false;
+
+        return error.Code == Code;
+    }
+
+    public static Error Unexpected() => new ("An unexpected error has occured", 1);
+    public static Error NotFound() => new ("The requested Job was not found", 404);
+    public static Error AlreadyMarked() => new ("The requested Job has already been marked", 2);
+    public static Error ModuleNotLoaded() => new ("The required module was not loaded", 3);
+    public static Error TypeNotFound() => new ("The required Type was not found in the current assemblies", 4);
+    public static Error MethodBaseNotFound() => new("The required methodbase could not be constructed", 5);
+    public static Error ServiceNotFound() => new("The required service was not found in the ServiceCollection", 6);
+    public static Error ExecutionFailed() => new("Failed to execute the job", 500);
+    public static Error InvalidDelegate() => new("The provided delegate can't be processed", 7);
+    public static Error StorageError() => new("Something went wrong with the JobStorage", 8);
+
 }
