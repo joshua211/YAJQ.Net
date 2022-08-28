@@ -7,32 +7,32 @@ namespace Fastjob.Tests.Unit;
 
 public class TestService
 {
-    public static int SyncCalls = 0;
-    public static int AsyncCalls = 0;
-    public static int ExceptionCalls = 0;
-    
-    public IJobDescriptor SyncDescriptor() =>
-        new JobDescriptor("Something", GetType().FullName, GetType().Module.Name, new object[] {1});
-    
-    public IJobDescriptor ExceptionDescriptor() =>
-        new JobDescriptor("SomethingException", GetType().FullName, GetType().Module.Name, new object[] {1});
-    
-    public IJobDescriptor AsyncDescriptor() =>
-        new JobDescriptor("SomethingAsync", GetType().FullName, GetType().Module.Name, new object[] {1});
+    public int SyncCalls = 0;
+    public int AsyncCalls = 0;
+    public int ExceptionCalls = 0;
 
-    public void Something(int i)
+    public static IJobDescriptor SyncDescriptor() =>
+        new JobDescriptor("Something", typeof(TestService).FullName, typeof(TestService).Module.Name, Array.Empty<object>());
+
+    public static IJobDescriptor ExceptionDescriptor() =>
+        new JobDescriptor("SomethingAsync", typeof(TestService).FullName, typeof(TestService).Module.Name, Array.Empty<object>());
+
+    public static IJobDescriptor AsyncDescriptor() =>
+        new JobDescriptor("SomethingException", typeof(TestService).FullName, typeof(TestService).Module.Name, Array.Empty<object>());
+
+    public void Something()
     {
         SyncCalls++;
     }
 
-    public Task SomethingAsync(int i)
+    public Task SomethingAsync()
     {
         AsyncCalls++;
 
         return Task.CompletedTask;
     }
 
-    public Task SomethingException(int i)
+    public Task SomethingException()
     {
         ExceptionCalls++;
         throw new Exception();

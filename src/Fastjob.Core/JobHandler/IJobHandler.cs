@@ -1,4 +1,4 @@
-﻿namespace Fastjob.Core.Interfaces;
+﻿namespace Fastjob.Core.JobHandler;
 
 public interface IJobHandler
 {

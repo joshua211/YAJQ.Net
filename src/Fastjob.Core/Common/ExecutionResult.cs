@@ -20,7 +20,13 @@ public record struct ExecutionResult<TValue>
         WasSuccess = false;
     }
 
-    public static implicit operator ExecutionResult<TValue>(TValue value) => new (value);
+    public TOut Match<TOut>(Func<TValue, TOut> onSuccess, Func<Error, TOut> onError)
+    {
+        return WasSuccess ? onSuccess(Value) : onError(this.Error);
+    }
+    
+
+    public static implicit operator ExecutionResult<TValue>(TValue value) => new(value);
     public static implicit operator ExecutionResult<TValue>(Error error) => new(error);
 
     public static ExecutionResult<Success> Success => new ExecutionResult<Success>(new Success());

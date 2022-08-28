@@ -29,5 +29,5 @@ public struct Error
     public static Error ExecutionFailed() => new("Failed to execute the job", 500);
     public static Error InvalidDelegate() => new("The provided delegate can't be processed", 7);
     public static Error StorageError() => new("Something went wrong with the JobStorage", 8);
-
+    public static Error CursorOutOfRange() => new("The current cursor does not point to a job", 9);
 }

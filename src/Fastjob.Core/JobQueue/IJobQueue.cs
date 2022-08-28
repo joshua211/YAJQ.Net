@@ -1,6 +1,6 @@
 ﻿using Fastjob.Core.Common;
 
-namespace Fastjob.Core.Interfaces;
+namespace Fastjob.Core.JobQueue;
 
 public interface IJobQueue
 {

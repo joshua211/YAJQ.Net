@@ -1,15 +1,16 @@
 ﻿using Fastjob.Core.Common;
 using Fastjob.Core.Interfaces;
+using Fastjob.Core.Persistence;
 
 namespace Fastjob.Core.JobQueue;
 
 public class JobQueue : IJobQueue
 {
-    private readonly IJobStorage jobStorage;
+    private readonly IJobRepository jobRepository;
 
-    public JobQueue(IJobStorage jobStorage)
+    public JobQueue(IJobRepository jobRepository)
     {
-        this.jobStorage = jobStorage;
+        this.jobRepository = jobRepository;
     }
 
     public async Task<ExecutionResult<Success>> EnqueueJob(Delegate d, params object[] args)
@@ -23,7 +24,7 @@ public class JobQueue : IJobQueue
 
         var descriptor = new JobDescriptor(jobName, typeName, moduleName, args);
 
-        await jobStorage.AddJobAsync(descriptor);
+        await jobRepository.AddJobAsync(descriptor);
 
         return new Success();
     }

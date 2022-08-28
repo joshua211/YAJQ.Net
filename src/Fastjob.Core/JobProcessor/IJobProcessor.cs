@@ -1,6 +1,7 @@
 ﻿using Fastjob.Core.Common;
+using Fastjob.Core.Interfaces;
 
-namespace Fastjob.Core.Interfaces;
+namespace Fastjob.Core.JobProcessor;
 
 public interface IJobProcessor
 {
