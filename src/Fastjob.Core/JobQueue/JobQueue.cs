@@ -1,4 +1,6 @@
-﻿using Fastjob.Core.Common;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using Fastjob.Core.Common;
 using Fastjob.Core.Interfaces;
 using Fastjob.Core.Persistence;
 
@@ -12,20 +14,61 @@ public class JobQueue : IJobQueue
     {
         this.jobRepository = jobRepository;
     }
-
-    public async Task<ExecutionResult<Success>> EnqueueJob(Delegate d, params object[] args)
+    
+    public async Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression)
     {
-        if (!d.Method.IsPublic || d.Method.IsAbstract)
-            return Error.InvalidDelegate();
-        //TODO validate descriptor here
-        var jobName = d.Method.Name;
-        var typeName = d.Method.ReflectedType.FullName;
-        var moduleName = d.Method.Module.Name;
+        var visitor = new FieldToConstantArgumentVisitor();
+        var resolvedExpression = (Expression<Action>) visitor.Visit(expression);
 
-        var descriptor = new JobDescriptor(jobName, typeName, moduleName, args);
+        var methodExpression = (MethodCallExpression) resolvedExpression.Body;
+        var method = methodExpression.Method;
+        var args = methodExpression.Arguments.Select(arg =>
+        {
+            var value = ((ConstantExpression) arg).Value!;
+            return value;
+        }).ToList();
 
+        var descriptor = ToJobDescriptor(method, args);
+        
         await jobRepository.AddJobAsync(descriptor);
 
         return new Success();
+    }
+
+    public async Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression)
+    {
+        var visitor = new FieldToConstantArgumentVisitor();
+        var resolvedExpression = (Expression<Func<T>>) visitor.Visit(expression);
+        
+        var methodExpression = (MethodCallExpression) resolvedExpression.Body;
+        var method = methodExpression.Method;
+        var args = methodExpression.Arguments.Select(arg =>
+        {
+            var value = ((ConstantExpression) arg).Value!;
+            return value;
+        });
+
+        var descriptor = ToJobDescriptor(method, args);
+        
+        await jobRepository.AddJobAsync(descriptor);
+
+        return new Success();
+    }
+
+    private static JobDescriptor ToJobDescriptor(MethodInfo method, IEnumerable<object> args)
+    {
+        var methodParams = method.GetParameters();
+        var argTypes = new Type[methodParams.Length];
+
+        for (var i = 0; i < methodParams.Length; ++i)
+        {
+            argTypes[i] = methodParams[i].ParameterType;
+        }
+
+        var jobName = method.Name;
+        var typeName = method.DeclaringType!.FullName;
+        var moduleName = method.DeclaringType.Module.Name;
+
+        return new JobDescriptor(jobName, typeName, moduleName, args);
     }
 }

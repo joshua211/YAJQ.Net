@@ -1,8 +1,10 @@
-﻿using Fastjob.Core.Common;
+﻿using System.Linq.Expressions;
+using Fastjob.Core.Common;
 
 namespace Fastjob.Core.JobQueue;
 
 public interface IJobQueue
 {
-     Task<ExecutionResult<Success>> EnqueueJob(Delegate d, params object[] args);
+     Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression);
+     Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression);
 }
