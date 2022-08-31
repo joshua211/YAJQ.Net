@@ -24,4 +24,9 @@ public class JobId
 
         return id.Value == Value;
     }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Fastjob.Example;
 
-public class Request
+public record Request(int Delay)
 {
     
 }

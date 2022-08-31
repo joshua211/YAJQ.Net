@@ -42,58 +42,41 @@ public class DefaultJobHandler : IJobHandler
             if (!openJobs.TryDequeue(out var nextJob))
             {
                 var nextPersistedJob = await repository.GetNextJobAsync();
-                if (!nextPersistedJob.WasSuccess || string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag))
+                if (!nextPersistedJob.WasSuccess || !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag))
                 {
-                    //no job in the database, lets wait some time but wake up if we get a new jobEvent
-                    await Task.Delay(1000, source.Token).ContinueWith(t =>
+                    logger.LogTrace("No job in the database, waiting for 1 second");
+
+                    await Task.Delay(10000, source.Token).ContinueWith(t =>
                     {
-                        
-                    }, cancellationToken: cancellationToken);
-                    
+                        if (t.IsCanceled)
+                            logger.LogTrace("Waking up from waiting");
+                    }, cancellationToken);
+
                     continue;
                 }
 
                 nextJob = nextPersistedJob.Value.Id;
             }
 
+            logger.LogTrace("Found open job: {Id}", nextJob);
+
             var result = await repository.TryGetAndMarkJobAsync(nextJob, processor.ProcessorId);
             if (!result.WasSuccess)
             {
-                //seems like job was already claimed, lets move on
+                logger.LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
                 continue;
             }
-            
+
             var processingResult = await processor.ProcessJobAsync(result.Value.Descriptor, cancellationToken);
             if (!processingResult.WasSuccess)
             {
-                //job failed, damn
+                logger.LogWarning("Failed to process Job {Name} with Id {Id}: {Error}",
+                    result.Value.Descriptor.JobName, result.Value.Id, processingResult.Error);
                 continue;
             }
 
+            logger.LogTrace("Completing Job {Name} with Id {Id}", result.Value.Descriptor.JobName, result.Value.Id);
             await repository.CompleteJobAsync(result.Value.Id);
         }
-        /*while (!cancellationToken.IsCancellationRequested)
-        {
-            var result = await repository.GetNextJobAsync();
-            if (!result.WasSuccess)
-            {
-                await Task.Delay(1000, cancellationToken);
-                continue;
-            }
-
-            result = await repository.TryMarkAndGetJobAsync(result.Value.Id, processor.ProcessorId);
-            if (!result.WasSuccess)
-                continue;
-
-            var descriptor = result.Value.Descriptor;
-            var processingResult = await processor.ProcessJobAsync(descriptor, cancellationToken);
-            if (!processingResult.WasSuccess)
-            {
-                //TODO handle errors maybe?
-                continue;
-            }
-
-            await repository.RemoveJobAsync(result.Value.Id);
-        }*/
     }
 }
