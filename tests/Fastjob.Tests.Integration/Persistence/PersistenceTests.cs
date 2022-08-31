@@ -1,0 +1,118 @@
+﻿using System.Threading.Tasks;
+using Fastjob.Core.Common;
+using Fastjob.Core.Persistence;
+using Fastjob.Tests.Shared;
+using FluentAssertions;
+using Xunit;
+
+namespace Fastjob.Tests.Integration.Persistence;
+
+public class PersistenceTests : IntegrationTest
+{
+    [Fact]
+    public async Task CanSaveJob()
+    {
+        //Arrange
+        var wasSaved = false;
+        Persistence.OnJobEvent += (s, e) => wasSaved = true;
+
+        //Act
+        await Repository.AddJobAsync(AsyncService.Descriptor());
+
+        //Assert
+        wasSaved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CanGetSavedJob()
+    {
+        //Arrange
+        var jobId = JobId.New;
+        await Repository.AddJobAsync(AsyncService.Descriptor(), jobId);
+
+        //Act
+        var job = await Repository.GetJobAsync(jobId);
+
+        //Assert
+        job.WasSuccess.Should().BeTrue();
+        job.Value.Id.Should().Be(jobId);
+    }
+
+    [Fact]
+    public async Task CanMarkJob()
+    {
+        //Arrange
+        var jobId = JobId.New;
+        await Repository.AddJobAsync(AsyncService.Descriptor(), jobId);
+
+        //Act
+        var result = await Repository.TryGetAndMarkJobAsync(jobId, "XXX");
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        var job = (await Repository.GetJobAsync(jobId)).Value;
+        job.ConcurrencyTag.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task CanRemoveJob()
+    {
+        //Arrange
+        var jobId = JobId.New;
+        await Repository.AddJobAsync(AsyncService.Descriptor(), jobId);
+
+        //Act
+        var result = await Persistence.RemoveJobAsync(jobId);
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CanRemoveAllJobs()
+    {
+        //Arrange
+        var jobId1 = JobId.New;
+        var jobId2 = JobId.New;
+        await Repository.AddJobAsync(AsyncService.Descriptor(), jobId1);
+        await Repository.AddJobAsync(AsyncService.Descriptor(), jobId2);
+
+        //Act
+        var result = await Persistence.RemoveAllJobsAsync();
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        (await Repository.GetJobAsync(jobId1)).Error.Should().Be(Error.NotFound());
+        (await Repository.GetJobAsync(jobId2)).Error.Should().Be(Error.NotFound());
+    }
+
+    [Fact]
+    public async Task CanGetJobAtCursor()
+    {
+        //Arrange
+        await AddJobs(5);
+        await Persistence.IncreaseCursorAsync(); //cursor at 1
+        await Persistence.IncreaseCursorAsync(); //cursor at 2
+
+        //Act
+        var result = await Persistence.GetJobAtCursorAsync();
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        result.Value.Id.Value.Should().Be("2");
+    }
+
+    [Fact]
+    public async Task CanIncreaseCursor()
+    {
+        //Arrange
+        await AddJobs(5);
+        
+        //Act
+        var result = await Persistence.IncreaseCursorAsync();
+        
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        result.Value.CurrentCursor.Should().Be(1);
+    }
+}

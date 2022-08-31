@@ -15,7 +15,7 @@ public class JobQueue : IJobQueue
         this.jobRepository = jobRepository;
     }
     
-    public async Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression)
+    public async Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression, string? jobId = null)
     {
         var visitor = new FieldToConstantArgumentVisitor();
         var resolvedExpression = (Expression<Action>) visitor.Visit(expression);
@@ -30,12 +30,12 @@ public class JobQueue : IJobQueue
 
         var descriptor = ToJobDescriptor(method, args);
         
-        await jobRepository.AddJobAsync(descriptor);
+        await jobRepository.AddJobAsync(descriptor, jobId);
 
         return new Success();
     }
 
-    public async Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression)
+    public async Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression, string? jobId = null)
     {
         var visitor = new FieldToConstantArgumentVisitor();
         var resolvedExpression = (Expression<Func<T>>) visitor.Visit(expression);
@@ -50,7 +50,7 @@ public class JobQueue : IJobQueue
 
         var descriptor = ToJobDescriptor(method, args);
         
-        await jobRepository.AddJobAsync(descriptor);
+        await jobRepository.AddJobAsync(descriptor, jobId);
 
         return new Success();
     }

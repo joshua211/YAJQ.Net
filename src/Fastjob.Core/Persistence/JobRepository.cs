@@ -16,13 +16,13 @@ public class JobRepository : IJobRepository
 
     public event EventHandler<string>? OnJobEvent;
 
-    public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor)
+    public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null)
     {
-        var jobId = Guid.NewGuid().ToString();
+        var jobId = id is null ? JobId.New : JobId.With(id);
         var job = new PersistedJob(jobId, descriptor, string.Empty);
         var result = await persistence.SaveJobAsync(job);
 
-        return result.WasSuccess ? jobId : Error.StorageError();
+        return result.WasSuccess ? jobId.Value : Error.StorageError();
     }
 
     public async Task<ExecutionResult<PersistedJob>> GetNextJobAsync()

@@ -5,6 +5,6 @@ namespace Fastjob.Core.JobQueue;
 
 public interface IJobQueue
 {
-     Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression);
-     Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression);
+     Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression, string? jobId = null);
+     Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression, string? jobId = null);
 }

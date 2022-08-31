@@ -20,7 +20,7 @@ public class GetJobAtCursorTests : TestBase
 
         //Arrange
         result.WasSuccess.Should().BeTrue();
-        result.Value.Id.Should().Be(JobId);
+        result.Value.Id.Value.Should().Be(JobId);
     }
 
     [Fact]
@@ -41,11 +41,11 @@ public class GetJobAtCursorTests : TestBase
 
         //Arrange
         result1.WasSuccess.Should().BeTrue();
-        result1.Value.Id.Should().Be(JobId);
+        result1.Value.Id.Value.Should().Be(JobId);
         result2.WasSuccess.Should().BeTrue();
-        result2.Value.Id.Should().Be(JobId);
+        result2.Value.Id.Value.Should().Be(JobId);
         
         result3.WasSuccess.Should().BeTrue();
-        result3.Value.Id.Should().Be("ASDF");
+        result3.Value.Id.Value.Should().Be("ASDF");
     }
 }

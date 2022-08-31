@@ -47,7 +47,7 @@ public class MemoryPersistence : IJobPersistence
     {
         lock (jobLock)
         {
-            var index = jobs.FindIndex(j => j.Id == persistedJob.Id);
+            var index = jobs.FindIndex(j => Equals(j.Id, persistedJob.Id));
             if (index == -1)
                 return Error.NotFound();
 

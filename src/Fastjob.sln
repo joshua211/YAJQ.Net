@@ -9,7 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Persistence.Memory"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Tests.Unit", "..\tests\Fastjob.Tests.Unit\Fastjob.Tests.Unit.csproj", "{D2761F5A-D587-4877-8A63-2B487DB18A7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Tests.Integration", "Fastjob.Tests.Integration\Fastjob.Tests.Integration.csproj", "{7FB72929-6736-43B5-9517-5994041309C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Tests.Integration", "..\tests\Fastjob.Tests.Integration\Fastjob.Tests.Integration.csproj", "{7FB72929-6736-43B5-9517-5994041309C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Tests.Shared", "..\tests\Fastjob.Tests.Shared\Fastjob.Tests.Shared.csproj", "{AFCEB82B-2174-4056-94EF-3F88FAD6B60E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Hosted", "Fastjob.Hosted\Fastjob.Hosted.csproj", "{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +40,13 @@ Global
 		{7FB72929-6736-43B5-9517-5994041309C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FB72929-6736-43B5-9517-5994041309C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FB72929-6736-43B5-9517-5994041309C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFCEB82B-2174-4056-94EF-3F88FAD6B60E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFCEB82B-2174-4056-94EF-3F88FAD6B60E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFCEB82B-2174-4056-94EF-3F88FAD6B60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFCEB82B-2174-4056-94EF-3F88FAD6B60E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
