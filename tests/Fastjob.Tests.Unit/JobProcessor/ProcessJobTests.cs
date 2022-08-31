@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Fastjob.Core.JobProcessor;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
@@ -15,7 +16,7 @@ public class ProcessJobTests : TestBase
         //Arrange
         var provider = Substitute.For<IServiceProvider>();
         provider.GetService(typeof(TestService)).Returns(service);
-        var processor = new DefaultJobProcessor(moduleHelper, provider, logger);
+        var processor = new DefaultJobProcessor(moduleHelper, provider, Substitute.For<ILogger<DefaultJobProcessor>>());
         var descriptor = PersistedSyncJob().Descriptor;
         
         //Act
@@ -32,7 +33,7 @@ public class ProcessJobTests : TestBase
         //Arrange
         var provider = Substitute.For<IServiceProvider>();
         provider.GetService(typeof(TestService)).Returns(service);
-        var processor = new DefaultJobProcessor(moduleHelper, provider, logger);
+        var processor = new DefaultJobProcessor(moduleHelper, provider, Substitute.For<ILogger<DefaultJobProcessor>>());
         var descriptor = TestService.SyncWithValueDescriptor();
         
         //Act
@@ -49,7 +50,7 @@ public class ProcessJobTests : TestBase
         //Arrange
         var provider = Substitute.For<IServiceProvider>();
         provider.GetService(typeof(TestService)).Returns(service);
-        var processor = new DefaultJobProcessor(moduleHelper, provider, logger);
+        var processor = new DefaultJobProcessor(moduleHelper, provider, Substitute.For<ILogger<DefaultJobProcessor>>());
         var descriptor = TestService.AsyncDescriptor();
         
         //Act
@@ -66,7 +67,7 @@ public class ProcessJobTests : TestBase
         //Arrange
         var provider = Substitute.For<IServiceProvider>();
         provider.GetService(typeof(TestService)).Returns(service);
-        var processor = new DefaultJobProcessor(moduleHelper, provider, logger);
+        var processor = new DefaultJobProcessor(moduleHelper, provider, Substitute.For<ILogger<DefaultJobProcessor>>());
         var descriptor = TestService.AsyncWithValueDescriptor();
         
         //Act

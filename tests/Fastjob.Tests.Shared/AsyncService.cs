@@ -15,7 +15,7 @@ public class AsyncService : IAsyncService
 
     public async Task DoAsync(string id)
     {
-        await Task.Delay(100);
+        await Task.Delay(10);
         CallReceiver.AddCall(id);
     }
 }

@@ -11,11 +11,11 @@ namespace Fastjob.Core.JobProcessor;
 public class DefaultJobProcessor : JobProcessorBase
 {
     private readonly IModuleHelper moduleHelper;
-    private readonly ILogger logger;
+    private readonly ILogger<DefaultJobProcessor> logger;
     private readonly IServiceProvider serviceProvider;
 
     public DefaultJobProcessor(IModuleHelper moduleHelper, IServiceProvider serviceProvider,
-        ILogger logger)
+        ILogger<DefaultJobProcessor> logger)
     {
         this.moduleHelper = moduleHelper;
         this.serviceProvider = serviceProvider;

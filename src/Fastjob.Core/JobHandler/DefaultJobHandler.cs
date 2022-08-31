@@ -15,15 +15,15 @@ public class DefaultJobHandler : IJobHandler
     private readonly IJobRepository repository;
     private CancellationTokenSource source;
 
-    public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IServiceProvider provider, IModuleHelper moduleHelper,
+    public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IJobProcessor processor, IModuleHelper moduleHelper,
         IJobRepository repository)
     {
         this.logger = logger;
         this.repository = repository;
-        
+
         openJobs = new ConcurrentQueue<string>();
         source = new CancellationTokenSource();
-        processor = new DefaultJobProcessor(moduleHelper, provider, logger);
+        this.processor = processor;
 
         repository.OnJobEvent += HandleJobEvent;
     }
@@ -45,7 +45,11 @@ public class DefaultJobHandler : IJobHandler
                 if (!nextPersistedJob.WasSuccess || string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag))
                 {
                     //no job in the database, lets wait some time but wake up if we get a new jobEvent
-                    await Task.Delay(1000, source.Token);
+                    await Task.Delay(1000, source.Token).ContinueWith(t =>
+                    {
+                        
+                    }, cancellationToken: cancellationToken);
+                    
                     continue;
                 }
 
@@ -58,7 +62,7 @@ public class DefaultJobHandler : IJobHandler
                 //seems like job was already claimed, lets move on
                 continue;
             }
-
+            
             var processingResult = await processor.ProcessJobAsync(result.Value.Descriptor, cancellationToken);
             if (!processingResult.WasSuccess)
             {

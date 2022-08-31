@@ -96,7 +96,7 @@ public class MemoryPersistence : IJobPersistence
     {
         lock (jobLock)
         {
-            if (jobs.Count < cursor.CurrentCursor)
+            if (cursor.CurrentCursor > jobs.Count -1)
                 return Task.FromResult<ExecutionResult<PersistedJob>>(Error.CursorOutOfRange());
 
             var job = jobs[cursor.CurrentCursor];

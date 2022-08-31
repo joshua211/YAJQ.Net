@@ -4,11 +4,16 @@ using Fastjob.Core.Persistence;
 using Fastjob.Tests.Shared;
 using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Fastjob.Tests.Integration.Persistence;
 
 public class PersistenceTests : IntegrationTest
 {
+    public PersistenceTests(ITestOutputHelper outputHelper) : base(outputHelper)
+    {
+    }
+
     [Fact]
     public async Task CanSaveJob()
     {
@@ -107,10 +112,10 @@ public class PersistenceTests : IntegrationTest
     {
         //Arrange
         await AddJobs(5);
-        
+
         //Act
         var result = await Persistence.IncreaseCursorAsync();
-        
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         result.Value.CurrentCursor.Should().Be(1);

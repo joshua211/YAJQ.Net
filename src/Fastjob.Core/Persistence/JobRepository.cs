@@ -59,7 +59,7 @@ public class JobRepository : IJobRepository
 
     public Task<ExecutionResult<Success>> CompleteJobAsync(string jobId)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(ExecutionResult<Success>.Success);
     }
 
     private void HandleJobEvent(object? sender, string e)

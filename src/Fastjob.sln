@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Tests.Shared", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Hosted", "Fastjob.Hosted\Fastjob.Hosted.csproj", "{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fastjob.Example", "..\example\Fastjob.Example\Fastjob.Example.csproj", "{DF5E632C-B132-471E-9B66-352C7C7AD116}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABDAD6BC-D9B4-4B8A-AF9C-96BFEB88087C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF5E632C-B132-471E-9B66-352C7C7AD116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF5E632C-B132-471E-9B66-352C7C7AD116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF5E632C-B132-471E-9B66-352C7C7AD116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF5E632C-B132-471E-9B66-352C7C7AD116}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

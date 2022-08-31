@@ -13,10 +13,11 @@ using Fastjob.Tests.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Xunit.Abstractions;
 
 namespace Fastjob.Tests.Integration;
 
-public abstract class IntegrationTest
+public abstract class IntegrationTest: IDisposable
 {
     private readonly CancellationTokenSource handlerTokenSource;
     protected IServiceProvider Provider { get; private set; }
@@ -27,17 +28,18 @@ public abstract class IntegrationTest
     protected ILogger Logger { get; private set; }
     protected IJobRepository Repository { get; private set; }
 
-    public IntegrationTest()
+    public IntegrationTest(ITestOutputHelper outputHelper)
     {
         handlerTokenSource = new CancellationTokenSource();
-        
+
         IServiceCollection collection = new ServiceCollection();
         collection.AddTransient<IJobQueue, JobQueue>();
         collection.AddTransient<IJobProcessor, DefaultJobProcessor>();
         collection.AddTransient<IJobRepository, JobRepository>();
         collection.AddTransient<IJobHandler, DefaultJobHandler>();
         collection.AddTransient<IAsyncService, AsyncService>();
-        collection.AddSingleton<ILogger>(Substitute.For<ILogger>());
+        collection.AddTransient<AsyncService, AsyncService>();
+        collection.AddLogging();
         collection.AddSingleton(Substitute.For<ILogger<DefaultJobHandler>>());
         collection.AddTransient<IModuleHelper, ModuleHelper>();
         collection = Configure(collection);
@@ -59,7 +61,7 @@ public abstract class IntegrationTest
     {
         Task.Run(() => Handler.Start(handlerTokenSource.Token));
     }
-
+    
     protected async Task<IEnumerable<string>> AddJobs(int amount)
     {
         var ids = new List<string>();
@@ -72,5 +74,10 @@ public abstract class IntegrationTest
         }
 
         return ids;
+    }
+
+    public void Dispose()
+    {
+        handlerTokenSource.Dispose();
     }
 }
