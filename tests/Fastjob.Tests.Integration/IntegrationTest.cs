@@ -32,10 +32,12 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IJobHandler, DefaultJobHandler>();
         collection.AddTransient<IAsyncService, AsyncService>();
         collection.AddTransient<AsyncService, AsyncService>();
-        collection.AddLogging();
+        collection.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
+        collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         collection.AddSingleton(Substitute.For<ILogger<DefaultJobHandler>>());
         collection.AddTransient<IModuleHelper, ModuleHelper>();
         collection.AddTransient<FastjobOptions>();
+        collection.AddLogging();
         collection = Configure(collection);
 
         Provider = collection.BuildServiceProvider();

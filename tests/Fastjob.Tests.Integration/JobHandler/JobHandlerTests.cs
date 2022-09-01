@@ -49,7 +49,7 @@ public class JobHandlerTests : IntegrationTest
         StartJobHandler();
 
         //Act
-        var ids = await AddJobs(5);
+        var ids = await AddJobs(10);
         await WaitForCompletionAsync(ids.ToList());
 
         //Assert

@@ -11,20 +11,28 @@ public class DefaultJobHandler : IJobHandler
     private readonly ILogger<DefaultJobHandler> logger;
     private readonly ConcurrentQueue<string> openJobs;
     private readonly FastjobOptions options;
-    private readonly IJobProcessor processor;
+    private readonly IJobProcessorFactory processorFactory;
     private readonly IJobRepository repository;
+    private readonly IProcessorSelectionStrategy selectionStrategy;
     private CancellationTokenSource source;
 
-    public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IJobProcessor processor, IModuleHelper moduleHelper,
-        IJobRepository repository, FastjobOptions options)
+    public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IModuleHelper moduleHelper,
+        IJobRepository repository, FastjobOptions options, IJobProcessorFactory processorFactory,
+        IProcessorSelectionStrategy selectionStrategy)
     {
         this.logger = logger;
         this.repository = repository;
         this.options = options;
-        this.processor = processor;
+        this.processorFactory = processorFactory;
+        this.selectionStrategy = selectionStrategy;
 
         openJobs = new ConcurrentQueue<string>();
         source = new CancellationTokenSource();
+
+        foreach (var _ in Enumerable.Range(0, options.NumberOfProcessors))
+        {
+            selectionStrategy.AddProcessor(processorFactory.New());
+        }
 
         repository.Update += OnJobUpdate;
     }
@@ -33,28 +41,10 @@ public class DefaultJobHandler : IJobHandler
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            if (!openJobs.TryDequeue(out var nextJob))
-            {
-                var nextPersistedJob = await repository.GetNextJobAsync();
-                if (!nextPersistedJob.WasSuccess
-                    || !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag)
-                    || nextPersistedJob.Value.State != JobState.Pending)
-                {
-                    logger.LogTrace("No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
-
-                    await Task.Delay(options.HandlerTimeout, source.Token).ContinueWith(t =>
-                    {
-                        if (t.IsCanceled)
-                            logger.LogTrace("Waking up from waiting");
-                    }, cancellationToken);
-
-                    continue;
-                }
-
-                nextJob = nextPersistedJob.Value.Id;
-            }
-
+            var nextJob = await WaitForNextJobIdAsync(cancellationToken);
             logger.LogTrace("Found open job: {Id}", nextJob);
+
+            var processor = await selectionStrategy.GetNextProcessorAsync();
 
             var result = await repository.TryGetAndMarkJobAsync(nextJob, processor.ProcessorId);
             if (!result.WasSuccess)
@@ -80,6 +70,36 @@ public class DefaultJobHandler : IJobHandler
             logger.LogTrace("Completing Job {Name} with Id {Id}", result.Value.Descriptor.JobName, result.Value.Id);
             await repository.CompleteJobAsync(result.Value.Id);
         }
+    }
+
+    private async Task<string> WaitForNextJobIdAsync(CancellationToken cancellationToken)
+    {
+        string? nextJob = null;
+        while (nextJob is null)
+        {
+            if (openJobs.TryDequeue(out nextJob))
+                continue;
+
+            var nextPersistedJob = await repository.GetNextJobAsync();
+            if (!nextPersistedJob.WasSuccess
+                || !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag)
+                || nextPersistedJob.Value.State != JobState.Pending)
+            {
+                logger.LogTrace("No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
+
+                await Task.Delay(options.HandlerTimeout, source.Token).ContinueWith(t =>
+                {
+                    if (t.IsCanceled)
+                        logger.LogTrace("Waking up from waiting");
+                }, cancellationToken);
+
+                continue;
+            }
+
+            nextJob = nextPersistedJob.Value.Id;
+        }
+
+        return nextJob;
     }
 
     private void OnJobUpdate(object? sender, JobEvent e)
