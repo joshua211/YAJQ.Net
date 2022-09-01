@@ -14,12 +14,14 @@ public class DefaultJobHandler : IJobHandler
     private readonly IJobProcessor processor;
     private readonly IJobRepository repository;
     private CancellationTokenSource source;
+    private readonly FastjobOptions options;
 
     public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IJobProcessor processor, IModuleHelper moduleHelper,
-        IJobRepository repository)
+        IJobRepository repository, FastjobOptions options)
     {
         this.logger = logger;
         this.repository = repository;
+        this.options = options;
 
         openJobs = new ConcurrentQueue<string>();
         source = new CancellationTokenSource();
@@ -44,9 +46,9 @@ public class DefaultJobHandler : IJobHandler
                 var nextPersistedJob = await repository.GetNextJobAsync();
                 if (!nextPersistedJob.WasSuccess || !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag))
                 {
-                    logger.LogTrace("No job in the database, waiting for 1 second");
+                    logger.LogTrace("No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
 
-                    await Task.Delay(10000, source.Token).ContinueWith(t =>
+                    await Task.Delay(options.HandlerTimeout, source.Token).ContinueWith(t =>
                     {
                         if (t.IsCanceled)
                             logger.LogTrace("Waking up from waiting");

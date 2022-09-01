@@ -1,3 +1,4 @@
+using Fastjob.Core;
 using Fastjob.DependencyInjection;
 using Fastjob.Example;
 using Fastjob.Hosted;
@@ -10,7 +11,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddFastjob();
+builder.Services.AddFastjob(options => options.HandlerTimeout = 1500);
 builder.Services.AddHostedJobHandler();
 builder.Services.AddSingleton<IRequestHandler, RequestHandler>();
 
