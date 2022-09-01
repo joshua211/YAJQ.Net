@@ -19,7 +19,7 @@ public class PersistenceTests : IntegrationTest
     {
         //Arrange
         var wasSaved = false;
-        Persistence.OnJobEvent += (s, e) => wasSaved = true;
+        Persistence.NewJob += (s, e) => wasSaved = true;
 
         //Act
         await Repository.AddJobAsync(AsyncService.Descriptor());

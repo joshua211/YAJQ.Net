@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Fastjob.Core.Persistence;
+﻿using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
@@ -17,7 +15,7 @@ public class SaveJobTests : TestBase
 
         //Act
         var result = await pers.SaveJobAsync(job);
-        
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         var retrievedJob = await pers.GetJobAsync(job.Id);
@@ -32,11 +30,11 @@ public class SaveJobTests : TestBase
         var wasRaised = false;
         var job = PersistedSyncJob();
         var pers = new Persistence.Memory.MemoryPersistence();
-        pers.OnJobEvent += (s, e) => wasRaised = true;
-        
+        pers.NewJob += (s, e) => wasRaised = true;
+
         //Act
         var result = await pers.SaveJobAsync(job);
-        
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         wasRaised.Should().BeTrue();
@@ -52,7 +50,7 @@ public class SaveJobTests : TestBase
 
         //Act
         await pers.SaveJobAsync(job);
-        
+
         //Assert
         var cursor = await pers.GetCursorAsync();
         cursor.Value.MaxCursor.Should().BeGreaterThan(initialCursor.Value.MaxCursor);

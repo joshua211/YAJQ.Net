@@ -4,7 +4,7 @@ namespace Fastjob.Core.Persistence;
 
 public interface IJobPersistence
 {
-    public event EventHandler<string>? OnJobEvent;
+    public event EventHandler<string>? NewJob;
     Task<ExecutionResult<Success>> SaveJobAsync(PersistedJob persistedJob);
     Task<ExecutionResult<PersistedJob>> GetJobAsync(string id);
     Task<ExecutionResult<Success>> UpdateJobAsync(PersistedJob persistedJob);

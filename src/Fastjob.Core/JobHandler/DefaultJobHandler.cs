@@ -26,7 +26,7 @@ public class DefaultJobHandler : IJobHandler
         openJobs = new ConcurrentQueue<string>();
         source = new CancellationTokenSource();
 
-        repository.OnJobEvent += HandleJobEvent;
+        repository.Update += OnJobUpdate;
     }
 
     public async Task Start(CancellationToken cancellationToken)
@@ -82,9 +82,12 @@ public class DefaultJobHandler : IJobHandler
         }
     }
 
-    private void HandleJobEvent(object? sender, string e)
+    private void OnJobUpdate(object? sender, JobEvent e)
     {
-        openJobs.Enqueue(e);
+        if (e.State != JobState.Pending)
+            return;
+
+        openJobs.Enqueue(e.JobId);
         source.Cancel();
         source = new CancellationTokenSource();
     }

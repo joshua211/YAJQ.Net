@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Fastjob.Core.Persistence;
 using Fastjob.Persistence.Memory;
 using Fastjob.Tests.Shared;
@@ -34,7 +36,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoAsync(jobId), jobId);
-        await Task.Delay(100);
+        await WaitForCompletionAsync(jobId);
 
         //Assert
         CallReceiver.WasCalledXTimes(jobId).Should().BeTrue();
@@ -48,7 +50,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         var ids = await AddJobs(5);
-        await Task.Delay(500);
+        await WaitForCompletionAsync(ids.ToList());
 
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
@@ -58,17 +60,19 @@ public class JobHandlerTests : IntegrationTest
     public async Task CanHandleJobsWithDelay()
     {
         //Arrange
-        var id = "X";
+        var value = "X";
+        var id1 = JobId.New.Value;
+        var id2 = JobId.New.Value;
         StartJobHandler();
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(id));
+        await JobQueue.EnqueueJob(() => Service.DoAsync(value), id1);
         await Task.Delay(500);
-        await JobQueue.EnqueueJob(() => Service.DoAsync(id));
-        await Task.Delay(100);
+        await JobQueue.EnqueueJob(() => Service.DoAsync(value), id2);
+        await WaitForCompletionAsync(new List<string> {id1, id2});
 
         //Assert
-        CallReceiver.WasCalledXTimes(id, 2).Should().BeTrue();
+        CallReceiver.WasCalledXTimes(value, 2).Should().BeTrue();
     }
 
     [Fact]
@@ -80,7 +84,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoAsync(id), id);
-        await Task.Delay(1500);
+        await WaitForCompletionAsync(id);
 
         //Assert
         var archived = await Persistence.GetCompletedJobsAsync();
@@ -96,7 +100,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoExceptionAsync(), id);
-        await Task.Delay(1500);
+        await WaitForCompletionAsync(id);
 
         //Assert
         var archived = await Persistence.GetFailedJobsAsync();

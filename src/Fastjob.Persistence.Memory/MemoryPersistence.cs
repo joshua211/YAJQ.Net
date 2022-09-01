@@ -19,7 +19,7 @@ public class MemoryPersistence : IJobPersistence
         cursor = new JobCursor(0, 0);
     }
 
-    public event EventHandler<string>? OnJobEvent;
+    public event EventHandler<string>? NewJob;
 
     public Task<ExecutionResult<Success>> SaveJobAsync(PersistedJob persistedJob)
     {
@@ -29,7 +29,7 @@ public class MemoryPersistence : IJobPersistence
             cursor = cursor.IncreaseMax();
         }
 
-        OnJobEvent?.Invoke(this, persistedJob.Id);
+        NewJob?.Invoke(this, persistedJob.Id);
 
         return Task.FromResult(ExecutionResult<Success>.Success);
     }

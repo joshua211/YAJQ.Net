@@ -5,7 +5,7 @@ namespace Fastjob.Core.Persistence;
 
 public interface IJobRepository
 {
-    event EventHandler<string> OnJobEvent;
+    public event EventHandler<JobEvent> Update;
     Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null);
     Task<ExecutionResult<PersistedJob>> GetNextJobAsync();
     Task<ExecutionResult<PersistedJob>> GetJobAsync(string id);

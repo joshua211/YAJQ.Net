@@ -10,10 +10,10 @@ public class JobRepository : IJobRepository
     public JobRepository(IJobPersistence persistence)
     {
         this.persistence = persistence;
-        persistence.OnJobEvent += HandleJobEvent;
+        persistence.NewJob += OnNewJob;
     }
 
-    public event EventHandler<string>? OnJobEvent;
+    public event EventHandler<JobEvent> Update;
 
     public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null)
     {
@@ -73,8 +73,8 @@ public class JobRepository : IJobRepository
         return result.WasSuccess ? ExecutionResult<Success>.Success : result.Error;
     }
 
-    private void HandleJobEvent(object? sender, string e)
+    private void OnNewJob(object? sender, string e)
     {
-        OnJobEvent?.Invoke(this, e);
+        Update?.Invoke(this, new JobEvent(JobId.With(e), JobState.Pending));
     }
 }

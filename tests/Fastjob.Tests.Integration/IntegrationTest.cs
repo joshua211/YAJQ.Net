@@ -82,4 +82,26 @@ public abstract class IntegrationTest : IDisposable
 
         return ids;
     }
+
+    public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 2000) =>
+        await WaitForCompletionAsync(new List<string> {jobId}, maxWaitTime);
+
+    public async Task WaitForCompletionAsync(List<string> ids, int maxWaitTime = 2000)
+    {
+        var completedIds = new List<string>();
+        Repository.Update += (s, e) =>
+        {
+            if (e.State is JobState.Completed or JobState.Failed)
+                completedIds.Add(e.JobId);
+        };
+
+        var tries = 0;
+        do
+        {
+            await Task.Delay(100);
+            tries++;
+            if ((tries * 100) % maxWaitTime == 0)
+                break;
+        } while (!ids.All(s => completedIds.Contains(s)));
+    }
 }
