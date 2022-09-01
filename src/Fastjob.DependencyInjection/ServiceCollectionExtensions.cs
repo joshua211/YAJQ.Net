@@ -22,11 +22,4 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJobPersistence>(new MemoryPersistence());
         return services;
     }
-
-    public static IServiceCollection AddHostedJobHandler(this IServiceCollection services)
-    {
-        services.AddHostedService<HostedJobHandler>();
-
-        return services;
-    }
 }

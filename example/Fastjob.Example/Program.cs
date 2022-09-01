@@ -1,5 +1,6 @@
 using Fastjob.DependencyInjection;
 using Fastjob.Example;
+using Fastjob.Hosted;
 
 var builder = WebApplication.CreateBuilder(args);
 
