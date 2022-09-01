@@ -20,41 +20,44 @@ public class DefaultJobProcessor : JobProcessorBase
         this.logger = logger;
     }
 
+    public override bool IsProcessing { get; protected set; }
+
     public override async Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor,
         CancellationToken cancellationToken = default)
     {
-        if (!moduleHelper.IsModuleLoaded(descriptor.ModuleName))
-        {
-            logger.LogWarning("The required Module {Module} is not loaded in the current process",
-                descriptor.ModuleName);
-            return Error.ModuleNotLoaded();
-        }
-
-        var jobType = GetType(descriptor.FullTypeName);
-        if (jobType is null)
-        {
-            logger.LogWarning("Failed to get Type {Type}, aborting job", descriptor.FullTypeName);
-            return Error.TypeNotFound();
-        }
-
-        var methodBase = (MethodBase?) jobType.FindMembers(MemberTypes.Method,
-            BindingFlags.Public | BindingFlags.Instance,
-            (info, _) => info.Name == descriptor.JobName, null).FirstOrDefault();
-
-        if (methodBase is null)
-        {
-            logger.LogWarning("Failed to find Method {Method} on Type {Type}, aborting job", descriptor.JobName,
-                jobType.Name);
-            return Error.MethodBaseNotFound();
-        }
-
-        var jobObject = serviceProvider.GetService(jobType);
-        if (jobObject is null)
-            return Error.ServiceNotFound();
-
-        object invokeResult = null;
+        IsProcessing = true;
         try
         {
+            if (!moduleHelper.IsModuleLoaded(descriptor.ModuleName))
+            {
+                logger.LogWarning("The required Module {Module} is not loaded in the current process",
+                    descriptor.ModuleName);
+                return Error.ModuleNotLoaded();
+            }
+
+            var jobType = GetType(descriptor.FullTypeName);
+            if (jobType is null)
+            {
+                logger.LogWarning("Failed to get Type {Type}, aborting job", descriptor.FullTypeName);
+                return Error.TypeNotFound();
+            }
+
+            var methodBase = (MethodBase?) jobType.FindMembers(MemberTypes.Method,
+                BindingFlags.Public | BindingFlags.Instance,
+                (info, _) => info.Name == descriptor.JobName, null).FirstOrDefault();
+
+            if (methodBase is null)
+            {
+                logger.LogWarning("Failed to find Method {Method} on Type {Type}, aborting job", descriptor.JobName,
+                    jobType.Name);
+                return Error.MethodBaseNotFound();
+            }
+
+            var jobObject = serviceProvider.GetService(jobType);
+            if (jobObject is null)
+                return Error.ServiceNotFound();
+
+            object invokeResult = null;
             invokeResult = methodBase.Invoke(jobObject, descriptor.Args.ToArray());
             if (invokeResult is Task task)
             {
@@ -65,6 +68,10 @@ public class DefaultJobProcessor : JobProcessorBase
         {
             logger.LogError(e, "Failed to execute job");
             return Error.ExecutionFailed();
+        }
+        finally
+        {
+            IsProcessing = false;
         }
 
         return new Success();

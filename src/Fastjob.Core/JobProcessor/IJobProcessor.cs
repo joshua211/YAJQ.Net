@@ -6,6 +6,8 @@ namespace Fastjob.Core.JobProcessor;
 public interface IJobProcessor
 {
     string ProcessorId { get; }
-    
-    Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor, CancellationToken cancellationToken = default);
+    bool IsProcessing { get; }
+
+    Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor,
+        CancellationToken cancellationToken = default);
 }

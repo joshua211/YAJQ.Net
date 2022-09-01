@@ -5,12 +5,14 @@ namespace Fastjob.Core.JobProcessor;
 
 public abstract class JobProcessorBase : IJobProcessor
 {
-    public string ProcessorId { get; init; }
-
     public JobProcessorBase()
     {
         ProcessorId = Guid.NewGuid().ToString().Split('-').First();
     }
 
-    public abstract Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor, CancellationToken cancellationToken = default);
+    public string ProcessorId { get; init; }
+    public abstract bool IsProcessing { get; protected set; }
+
+    public abstract Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor,
+        CancellationToken cancellationToken = default);
 }
