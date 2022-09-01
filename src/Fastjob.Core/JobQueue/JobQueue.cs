@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Fastjob.Core.Common;
-using Fastjob.Core.Interfaces;
 using Fastjob.Core.Persistence;
 
 namespace Fastjob.Core.JobQueue;
@@ -14,7 +13,7 @@ public class JobQueue : IJobQueue
     {
         this.jobRepository = jobRepository;
     }
-    
+
     public async Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression, string? jobId = null)
     {
         var visitor = new FieldToConstantArgumentVisitor();
@@ -29,7 +28,7 @@ public class JobQueue : IJobQueue
         }).ToList();
 
         var descriptor = ToJobDescriptor(method, args);
-        
+
         await jobRepository.AddJobAsync(descriptor, jobId);
 
         return new Success();
@@ -39,7 +38,7 @@ public class JobQueue : IJobQueue
     {
         var visitor = new FieldToConstantArgumentVisitor();
         var resolvedExpression = (Expression<Func<T>>) visitor.Visit(expression);
-        
+
         var methodExpression = (MethodCallExpression) resolvedExpression.Body;
         var method = methodExpression.Method;
         var args = methodExpression.Arguments.Select(arg =>
@@ -49,7 +48,7 @@ public class JobQueue : IJobQueue
         });
 
         var descriptor = ToJobDescriptor(method, args);
-        
+
         await jobRepository.AddJobAsync(descriptor, jobId);
 
         return new Success();

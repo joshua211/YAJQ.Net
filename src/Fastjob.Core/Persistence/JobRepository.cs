@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization.Metadata;
-using Fastjob.Core.Common;
+﻿using Fastjob.Core.Common;
 using Fastjob.Core.Interfaces;
 
 namespace Fastjob.Core.Persistence;
@@ -57,9 +56,21 @@ public class JobRepository : IJobRepository
         return updateResult.Match<ExecutionResult<PersistedJob>>(success => job.Value, error => error);
     }
 
-    public Task<ExecutionResult<Success>> CompleteJobAsync(string jobId)
+    public async Task<ExecutionResult<Success>> CompleteJobAsync(string jobId, bool wasSuccess = true)
     {
-        return Task.FromResult(ExecutionResult<Success>.Success);
+        var get = await persistence.GetJobAsync(jobId);
+        if (!get.WasSuccess) return get.Error;
+
+        var job = get.Value;
+        job.State = wasSuccess ? JobState.Completed : JobState.Failed;
+
+        var update = await persistence.UpdateJobAsync(job);
+        if (!update.WasSuccess)
+            return update.Error;
+
+        var result = await persistence.ArchiveJobAsync(job);
+
+        return result.WasSuccess ? ExecutionResult<Success>.Success : result.Error;
     }
 
     private void HandleJobEvent(object? sender, string e)

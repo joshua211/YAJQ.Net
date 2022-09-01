@@ -7,13 +7,15 @@ namespace Fastjob.Persistence.Memory;
 public class MemoryPersistence : IJobPersistence
 {
     private readonly object jobLock;
-    private ImmutableList<PersistedJob> jobs;
+    private ImmutableList<PersistedJob> archivedJobs;
     private JobCursor cursor;
+    private ImmutableList<PersistedJob> jobs;
 
     public MemoryPersistence()
     {
         jobLock = new object();
         jobs = ImmutableList<PersistedJob>.Empty;
+        archivedJobs = ImmutableList<PersistedJob>.Empty;
         cursor = new JobCursor(0, 0);
     }
 
@@ -85,6 +87,17 @@ public class MemoryPersistence : IJobPersistence
         return Task.FromResult(ExecutionResult<Success>.Success);
     }
 
+    public async Task<ExecutionResult<Success>> ArchiveJobAsync(PersistedJob job)
+    {
+        var remove = await RemoveJobAsync(job.Id);
+        if (!remove.WasSuccess)
+            return remove.Error;
+
+        archivedJobs = archivedJobs.Add(job);
+
+        return ExecutionResult<Success>.Success;
+    }
+
     public Task<ExecutionResult<JobCursor>> IncreaseCursorAsync()
     {
         cursor = cursor.Increase();
@@ -96,7 +109,7 @@ public class MemoryPersistence : IJobPersistence
     {
         lock (jobLock)
         {
-            if (cursor.CurrentCursor > jobs.Count -1)
+            if (cursor.CurrentCursor > jobs.Count - 1)
                 return Task.FromResult<ExecutionResult<PersistedJob>>(Error.CursorOutOfRange());
 
             var job = jobs[cursor.CurrentCursor];
@@ -107,5 +120,19 @@ public class MemoryPersistence : IJobPersistence
     public Task<ExecutionResult<JobCursor>> GetCursorAsync()
     {
         return Task.FromResult<ExecutionResult<JobCursor>>(cursor);
+    }
+
+    public async Task<ExecutionResult<IEnumerable<PersistedJob>>> GetCompletedJobsAsync()
+    {
+        var completedJobs = archivedJobs.Where(j => j.State == JobState.Completed);
+
+        return new ExecutionResult<IEnumerable<PersistedJob>>(completedJobs);
+    }
+
+    public async Task<ExecutionResult<IEnumerable<PersistedJob>>> GetFailedJobsAsync()
+    {
+        var completedJobs = archivedJobs.Where(j => j.State == JobState.Failed);
+
+        return new ExecutionResult<IEnumerable<PersistedJob>>(completedJobs);
     }
 }

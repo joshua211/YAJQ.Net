@@ -1,5 +1,4 @@
 ﻿using Fastjob.Core.Common;
-using Fastjob.Core.Interfaces;
 
 namespace Fastjob.Core.Persistence;
 
@@ -11,7 +10,10 @@ public interface IJobPersistence
     Task<ExecutionResult<Success>> UpdateJobAsync(PersistedJob persistedJob);
     Task<ExecutionResult<Success>> RemoveJobAsync(string jobId);
     Task<ExecutionResult<Success>> RemoveAllJobsAsync();
+    Task<ExecutionResult<Success>> ArchiveJobAsync(PersistedJob job);
     Task<ExecutionResult<JobCursor>> IncreaseCursorAsync();
     Task<ExecutionResult<PersistedJob>> GetJobAtCursorAsync();
     Task<ExecutionResult<JobCursor>> GetCursorAsync();
+    Task<ExecutionResult<IEnumerable<PersistedJob>>> GetCompletedJobsAsync();
+    Task<ExecutionResult<IEnumerable<PersistedJob>>> GetFailedJobsAsync();
 }

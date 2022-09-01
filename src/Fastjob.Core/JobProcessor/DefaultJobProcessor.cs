@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using Fastjob.Core.Common;
 using Fastjob.Core.Interfaces;
 using Fastjob.Core.Utils;
@@ -10,8 +8,8 @@ namespace Fastjob.Core.JobProcessor;
 
 public class DefaultJobProcessor : JobProcessorBase
 {
-    private readonly IModuleHelper moduleHelper;
     private readonly ILogger<DefaultJobProcessor> logger;
+    private readonly IModuleHelper moduleHelper;
     private readonly IServiceProvider serviceProvider;
 
     public DefaultJobProcessor(IModuleHelper moduleHelper, IServiceProvider serviceProvider,
@@ -58,16 +56,15 @@ public class DefaultJobProcessor : JobProcessorBase
         try
         {
             invokeResult = methodBase.Invoke(jobObject, descriptor.Args.ToArray());
+            if (invokeResult is Task task)
+            {
+                await task;
+            }
         }
         catch (Exception e)
         {
             logger.LogError(e, "Failed to execute job");
             return Error.ExecutionFailed();
-        }
-
-        if (invokeResult is Task task)
-        {
-            await task;
         }
 
         return new Success();

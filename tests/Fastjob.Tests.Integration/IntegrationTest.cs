@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Fastjob.Core;
 using Fastjob.Core.JobHandler;
 using Fastjob.Core.JobProcessor;
 using Fastjob.Core.JobQueue;
 using Fastjob.Core.Persistence;
 using Fastjob.Core.Utils;
-using Fastjob.Persistence.Memory;
 using Fastjob.Tests.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,16 +17,9 @@ using Xunit.Abstractions;
 
 namespace Fastjob.Tests.Integration;
 
-public abstract class IntegrationTest: IDisposable
+public abstract class IntegrationTest : IDisposable
 {
     private readonly CancellationTokenSource handlerTokenSource;
-    protected IServiceProvider Provider { get; private set; }
-    protected IJobHandler Handler { get; private set; }
-    protected IJobQueue JobQueue { get; private set; }
-    protected IAsyncService Service { get; private set; }
-    protected IJobPersistence Persistence { get; private set; }
-    protected ILogger Logger { get; private set; }
-    protected IJobRepository Repository { get; private set; }
 
     public IntegrationTest(ITestOutputHelper outputHelper)
     {
@@ -42,6 +35,7 @@ public abstract class IntegrationTest: IDisposable
         collection.AddLogging();
         collection.AddSingleton(Substitute.For<ILogger<DefaultJobHandler>>());
         collection.AddTransient<IModuleHelper, ModuleHelper>();
+        collection.AddTransient<FastjobOptions>();
         collection = Configure(collection);
 
         Provider = collection.BuildServiceProvider();
@@ -50,6 +44,19 @@ public abstract class IntegrationTest: IDisposable
         Persistence = Provider.GetRequiredService<IJobPersistence>();
         Service = Provider.GetRequiredService<IAsyncService>();
         Repository = Provider.GetRequiredService<IJobRepository>();
+    }
+
+    protected IServiceProvider Provider { get; private set; }
+    protected IJobHandler Handler { get; private set; }
+    protected IJobQueue JobQueue { get; private set; }
+    protected IAsyncService Service { get; private set; }
+    protected IJobPersistence Persistence { get; private set; }
+    protected ILogger Logger { get; private set; }
+    protected IJobRepository Repository { get; private set; }
+
+    public void Dispose()
+    {
+        handlerTokenSource.Dispose();
     }
 
     protected virtual IServiceCollection Configure(IServiceCollection collection)
@@ -61,7 +68,7 @@ public abstract class IntegrationTest: IDisposable
     {
         Task.Run(() => Handler.Start(handlerTokenSource.Token));
     }
-    
+
     protected async Task<IEnumerable<string>> AddJobs(int amount)
     {
         var ids = new List<string>();
@@ -74,10 +81,5 @@ public abstract class IntegrationTest: IDisposable
         }
 
         return ids;
-    }
-
-    public void Dispose()
-    {
-        handlerTokenSource.Dispose();
     }
 }
