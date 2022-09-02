@@ -53,22 +53,8 @@ public class DefaultJobHandler : IJobHandler
                 continue;
             }
 
-            var processingResult = await processor.ProcessJobAsync(result.Value.Descriptor, cancellationToken);
-            if (!processingResult.WasSuccess)
-            {
-                logger.LogWarning("Failed to process Job {Name} with Id {Id}: {Error}",
-                    result.Value.Descriptor.JobName, result.Value.Id, processingResult.Error);
-
-                var complete = await repository.CompleteJobAsync(result.Value.Id, false);
-                if (!complete.WasSuccess)
-                    logger.LogWarning("Failed to complete failed job {Name} with Id {Id}: {Error}",
-                        result.Value.Descriptor.JobName, result.Value.Id, complete.Error);
-
-                continue;
-            }
-
-            logger.LogTrace("Completing Job {Name} with Id {Id}", result.Value.Descriptor.JobName, result.Value.Id);
-            await repository.CompleteJobAsync(result.Value.Id);
+            var _ = Task.Run(() => ProcessJobAsync(result.Value, processor, cancellationToken), cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 
@@ -101,6 +87,27 @@ public class DefaultJobHandler : IJobHandler
 
         return nextJob;
     }
+
+    private async Task ProcessJobAsync(PersistedJob job, IJobProcessor processor, CancellationToken cancellationToken)
+    {
+        var processingResult = processor.ProcessJob(job.Descriptor, cancellationToken);
+        if (!processingResult.WasSuccess)
+        {
+            logger.LogWarning("Failed to process Job {Name} with Id {Id}: {Error}",
+                job.Descriptor.JobName, job.Id, processingResult.Error);
+
+            var complete = await repository.CompleteJobAsync(job.Id, false);
+            if (!complete.WasSuccess)
+                logger.LogWarning("Failed to complete failed job {Name} with Id {Id}: {Error}",
+                    job.Descriptor.JobName, job.Id, complete.Error);
+
+            return;
+        }
+
+        logger.LogTrace("Completing Job {Name} with Id {Id}", job.Descriptor.JobName, job.Id);
+        await repository.CompleteJobAsync(job.Id);
+    }
+
 
     private void OnJobUpdate(object? sender, JobEvent e)
     {

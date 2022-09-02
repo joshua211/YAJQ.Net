@@ -8,6 +8,6 @@ public interface IJobProcessor
     string ProcessorId { get; }
     bool IsProcessing { get; }
 
-    Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor,
+    ExecutionResult<Success> ProcessJob(IJobDescriptor descriptor,
         CancellationToken cancellationToken = default);
 }

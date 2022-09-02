@@ -1,12 +1,14 @@
-﻿namespace Fastjob.Tests.Shared;
+﻿using System.Collections.Concurrent;
+
+namespace Fastjob.Tests.Shared;
 
 public static class CallReceiver
 {
-    public static Dictionary<string, int> ReceivedCalls;
+    public static ConcurrentDictionary<string, int> ReceivedCalls;
 
     static CallReceiver()
     {
-        ReceivedCalls = new Dictionary<string, int>();
+        ReceivedCalls = new ConcurrentDictionary<string, int>();
     }
 
     public static void AddCall(string id)

@@ -20,7 +20,7 @@ public class ProcessJobTests : TestBase
         var descriptor = PersistedSyncJob().Descriptor;
         
         //Act
-        var result = await processor.ProcessJobAsync(descriptor);
+        var result = processor.ProcessJob(descriptor);
         
         //Assert
         result.WasSuccess.Should().BeTrue();
@@ -37,7 +37,7 @@ public class ProcessJobTests : TestBase
         var descriptor = TestService.SyncWithValueDescriptor();
         
         //Act
-        var result = await processor.ProcessJobAsync(descriptor);
+        var result = processor.ProcessJob(descriptor);
         
         //Assert
         result.WasSuccess.Should().BeTrue();
@@ -54,7 +54,7 @@ public class ProcessJobTests : TestBase
         var descriptor = TestService.AsyncDescriptor();
         
         //Act
-        var result = await processor.ProcessJobAsync(descriptor);
+        var result = processor.ProcessJob(descriptor);
         
         //Assert
         result.WasSuccess.Should().BeTrue();
@@ -71,7 +71,7 @@ public class ProcessJobTests : TestBase
         var descriptor = TestService.AsyncWithValueDescriptor();
         
         //Act
-        var result = await processor.ProcessJobAsync(descriptor);
+        var result = processor.ProcessJob(descriptor);
         
         //Assert
         result.WasSuccess.Should().BeTrue();

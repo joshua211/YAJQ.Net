@@ -22,7 +22,7 @@ public class DefaultJobProcessor : JobProcessorBase
 
     public override bool IsProcessing { get; protected set; }
 
-    public override async Task<ExecutionResult<Success>> ProcessJobAsync(IJobDescriptor descriptor,
+    public override ExecutionResult<Success> ProcessJob(IJobDescriptor descriptor,
         CancellationToken cancellationToken = default)
     {
         IsProcessing = true;
@@ -61,7 +61,7 @@ public class DefaultJobProcessor : JobProcessorBase
             invokeResult = methodBase.Invoke(jobObject, descriptor.Args.ToArray());
             if (invokeResult is Task task)
             {
-                await task;
+                 task.Wait();
             }
         }
         catch (Exception e)

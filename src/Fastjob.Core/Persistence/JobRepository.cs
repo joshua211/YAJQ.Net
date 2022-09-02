@@ -20,6 +20,8 @@ public class JobRepository : IJobRepository
         var jobId = id is null ? JobId.New : JobId.With(id);
         var job = new PersistedJob(jobId, descriptor, string.Empty);
         var result = await persistence.SaveJobAsync(job);
+        
+        Update?.Invoke(this, new JobEvent(jobId, JobState.Pending));
 
         return result.WasSuccess ? jobId.Value : Error.StorageError();
     }
@@ -69,6 +71,8 @@ public class JobRepository : IJobRepository
             return update.Error;
 
         var result = await persistence.ArchiveJobAsync(job);
+
+        Update?.Invoke(this, new JobEvent(JobId.With(jobId), wasSuccess ? JobState.Completed : JobState.Failed));
 
         return result.WasSuccess ? ExecutionResult<Success>.Success : result.Error;
     }

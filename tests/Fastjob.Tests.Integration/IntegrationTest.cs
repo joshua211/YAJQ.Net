@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,7 +29,7 @@ public abstract class IntegrationTest : IDisposable
         IServiceCollection collection = new ServiceCollection();
         collection.AddTransient<IJobQueue, JobQueue>();
         collection.AddTransient<IJobProcessor, DefaultJobProcessor>();
-        collection.AddTransient<IJobRepository, JobRepository>();
+        collection.AddSingleton<IJobRepository, JobRepository>();
         collection.AddTransient<IJobHandler, DefaultJobHandler>();
         collection.AddTransient<IAsyncService, AsyncService>();
         collection.AddTransient<AsyncService, AsyncService>();
@@ -90,7 +91,7 @@ public abstract class IntegrationTest : IDisposable
 
     public async Task WaitForCompletionAsync(List<string> ids, int maxWaitTime = 2000)
     {
-        var completedIds = new List<string>();
+        var completedIds = new ConcurrentBag<string>();
         Repository.Update += (s, e) =>
         {
             if (e.State is JobState.Completed or JobState.Failed)

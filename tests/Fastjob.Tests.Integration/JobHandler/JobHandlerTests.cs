@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Fastjob.Core.Persistence;
@@ -49,9 +50,9 @@ public class JobHandlerTests : IntegrationTest
         StartJobHandler();
 
         //Act
-        var ids = await AddJobs(10);
-        await WaitForCompletionAsync(ids.ToList());
-
+        var ids = await AddJobs(20);
+        await WaitForCompletionAsync(ids.ToList(), 2000);
+        
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
     }
