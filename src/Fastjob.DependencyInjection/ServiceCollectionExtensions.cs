@@ -4,11 +4,9 @@ using Fastjob.Core.JobProcessor;
 using Fastjob.Core.JobQueue;
 using Fastjob.Core.Persistence;
 using Fastjob.Core.Utils;
-using Fastjob.Hosted;
 using Fastjob.Persistence.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Fastjob.DependencyInjection;
@@ -44,7 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IJobQueue, JobQueue>();
         services.AddTransient<IJobProcessor, DefaultJobProcessor>();
         services.AddTransient<IJobRepository, JobRepository>();
-        services.AddTransient<IJobHandler, DefaultJobHandler>();
+        services.AddTransient<IJobHandler, MultiProcessorJobHandler>();
         services.AddTransient<IModuleHelper, ModuleHelper>();
         services.AddSingleton<IJobPersistence>(new MemoryPersistence());
         services.AddTransient<FastjobOptions>(provider =>

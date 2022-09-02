@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Fastjob.Core.JobHandler;
 
-public class DefaultJobHandler : IJobHandler
+public class MultiProcessorJobHandler : IJobHandler
 {
-    private readonly ILogger<DefaultJobHandler> logger;
+    private readonly ILogger<MultiProcessorJobHandler> logger;
     private readonly ConcurrentQueue<string> openJobs;
     private readonly FastjobOptions options;
     private readonly IJobProcessorFactory processorFactory;
@@ -16,7 +16,7 @@ public class DefaultJobHandler : IJobHandler
     private readonly IProcessorSelectionStrategy selectionStrategy;
     private CancellationTokenSource source;
 
-    public DefaultJobHandler(ILogger<DefaultJobHandler> logger, IModuleHelper moduleHelper,
+    public MultiProcessorJobHandler(ILogger<MultiProcessorJobHandler> logger, IModuleHelper moduleHelper,
         IJobRepository repository, FastjobOptions options, IJobProcessorFactory processorFactory,
         IProcessorSelectionStrategy selectionStrategy)
     {

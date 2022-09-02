@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Fastjob.Tests.Integration.Persistence;
 
-public class PersistenceTests : IntegrationTest
+public abstract class PersistenceTests : IntegrationTest
 {
     public PersistenceTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {

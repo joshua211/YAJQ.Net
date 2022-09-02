@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Fastjob.Core.Persistence;
@@ -52,7 +51,7 @@ public class JobHandlerTests : IntegrationTest
         //Act
         var ids = await AddJobs(20);
         await WaitForCompletionAsync(ids.ToList(), 2000);
-        
+
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
     }
@@ -61,7 +60,7 @@ public class JobHandlerTests : IntegrationTest
     public async Task CanHandleJobsWithDelay()
     {
         //Arrange
-        var value = "X";
+        var value = JobId.New;
         var id1 = JobId.New.Value;
         var id2 = JobId.New.Value;
         StartJobHandler();
@@ -80,7 +79,7 @@ public class JobHandlerTests : IntegrationTest
     public async Task CanCompleteSuccessfulJob()
     {
         //Arrange
-        var id = "X";
+        var id = JobId.New;
         StartJobHandler();
 
         //Act
@@ -89,14 +88,14 @@ public class JobHandlerTests : IntegrationTest
 
         //Assert
         var archived = await Persistence.GetCompletedJobsAsync();
-        archived.Value.Should().Satisfy(job => job.Id == id && job.State == JobState.Completed);
+        archived.Value.Should().Satisfy(job => job.Id == id.Value && job.State == JobState.Completed);
     }
 
     [Fact]
     public async Task CanCompleteFailedJob()
     {
         //Arrange
-        var id = "X";
+        var id = JobId.New;
         StartJobHandler();
 
         //Act
@@ -105,6 +104,6 @@ public class JobHandlerTests : IntegrationTest
 
         //Assert
         var archived = await Persistence.GetFailedJobsAsync();
-        archived.Value.Should().Satisfy(job => job.Id == id && job.State == JobState.Failed);
+        archived.Value.Should().Satisfy(job => job.Id == id.Value && job.State == JobState.Failed);
     }
 }

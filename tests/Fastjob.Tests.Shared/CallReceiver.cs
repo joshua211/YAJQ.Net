@@ -13,10 +13,7 @@ public static class CallReceiver
 
     public static void AddCall(string id)
     {
-        if (ReceivedCalls.TryGetValue(id, out var calls))
-            ReceivedCalls[id] += 1;
-        else
-            ReceivedCalls[id] = 1;
+        ReceivedCalls.AddOrUpdate(id, s => 1, (s, i) => i + 1);
     }
 
     public static bool WasCalledXTimes(string id, int x = 1)

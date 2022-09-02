@@ -30,12 +30,12 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IJobQueue, JobQueue>();
         collection.AddTransient<IJobProcessor, DefaultJobProcessor>();
         collection.AddSingleton<IJobRepository, JobRepository>();
-        collection.AddTransient<IJobHandler, DefaultJobHandler>();
+        collection.AddTransient<IJobHandler, MultiProcessorJobHandler>();
         collection.AddTransient<IAsyncService, AsyncService>();
         collection.AddTransient<AsyncService, AsyncService>();
         collection.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
-        collection.AddSingleton(Substitute.For<ILogger<DefaultJobHandler>>());
+        collection.AddSingleton(Substitute.For<ILogger<MultiProcessorJobHandler>>());
         collection.AddTransient<IModuleHelper, ModuleHelper>();
         collection.AddTransient<FastjobOptions>();
         collection.AddLogging();
@@ -77,7 +77,7 @@ public abstract class IntegrationTest : IDisposable
         var ids = new List<string>();
         foreach (var i in Enumerable.Range(0, amount))
         {
-            var id = i.ToString();
+            var id = JobId.New;
             await Repository.AddJobAsync(AsyncService.Descriptor(id), id);
 
             ids.Add(id);
