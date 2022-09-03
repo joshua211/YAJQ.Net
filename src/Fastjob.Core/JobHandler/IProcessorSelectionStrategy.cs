@@ -6,5 +6,5 @@ public interface IProcessorSelectionStrategy
 {
     void AddProcessor(IJobProcessor processor);
     void RemoveProcessor();
-    Task<IJobProcessor> GetNextProcessorAsync();
+    Task<IJobProcessor?> GetNextProcessorAsync();
 }
