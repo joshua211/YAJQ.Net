@@ -1,24 +1,24 @@
 ﻿using Fastjob.Core.Utils;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Fastjob.Core.JobProcessor;
 
 public class JobProcessorFactory : IJobProcessorFactory
 {
-    private readonly ILogger<DefaultJobProcessor> logger;
-    private readonly IModuleHelper moduleHelper;
     private readonly IServiceProvider serviceProvider;
 
-    public JobProcessorFactory(IModuleHelper moduleHelper, IServiceProvider serviceProvider,
-        ILogger<DefaultJobProcessor> logger)
+    public JobProcessorFactory(IServiceProvider serviceProvider)
     {
-        this.moduleHelper = moduleHelper;
         this.serviceProvider = serviceProvider;
-        this.logger = logger;
     }
 
     public IJobProcessor New()
     {
-        return new DefaultJobProcessor(moduleHelper, serviceProvider, logger);
+        var moduleHelper = serviceProvider.GetRequiredService<IModuleHelper>();
+        var logger = serviceProvider.GetRequiredService<ILogger<DefaultJobProcessor>>();
+        var faultHandler = serviceProvider.GetRequiredService<ITransientFaultHandler>();
+
+        return new DefaultJobProcessor(moduleHelper, serviceProvider, logger, faultHandler);
     }
 }

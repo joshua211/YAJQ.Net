@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fastjob.Core;
+using Fastjob.Core.JobProcessor;
 using Fastjob.Core.Persistence;
 using Fastjob.Core.Utils;
 using Microsoft.Extensions.Logging;
@@ -8,11 +9,13 @@ namespace Fastjob.Tests.Unit;
 
 public abstract class TestBase
 {
-    protected TestService service;
-    protected IJobRepository fakeRepository;
     protected IJobPersistence fakePersistence;
-    protected IModuleHelper moduleHelper;
+    protected IJobRepository fakeRepository;
     protected ILogger logger;
+    protected IModuleHelper moduleHelper;
+    protected FastjobOptions options;
+    protected TestService service;
+    protected ITransientFaultHandler transientFaultHandler;
 
     public TestBase()
     {
@@ -21,6 +24,9 @@ public abstract class TestBase
         moduleHelper = new ModuleHelper();
         logger = Substitute.For<ILogger>();
         service = new TestService();
+        options = new FastjobOptions();
+        transientFaultHandler =
+            new DefaultTransientFaultHandler(Substitute.For<ILogger<DefaultTransientFaultHandler>>(), options);
     }
 
     public string JobId => "XXXXXXXXXXXXXXXXX";

@@ -33,6 +33,7 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IJobHandler, MultiProcessorJobHandler>();
         collection.AddTransient<IAsyncService, AsyncService>();
         collection.AddTransient<AsyncService, AsyncService>();
+        collection.AddTransient<ITransientFaultHandler, DefaultTransientFaultHandler>();
         collection.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         collection.AddSingleton(Substitute.For<ILogger<MultiProcessorJobHandler>>());

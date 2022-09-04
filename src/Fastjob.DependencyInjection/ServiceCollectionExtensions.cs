@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IModuleHelper, ModuleHelper>();
         services.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         services.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
+        services.AddTransient<ITransientFaultHandler, DefaultTransientFaultHandler>();
         services.AddSingleton<IJobPersistence>(new MemoryPersistence());
         services.AddTransient<FastjobOptions>(provider =>
             provider.GetRequiredService<IOptions<FastjobOptions>>().Value);
