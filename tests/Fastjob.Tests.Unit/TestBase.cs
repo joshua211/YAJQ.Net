@@ -40,11 +40,11 @@ public abstract class TestBase
     public string JobId => "XXXXXXXXXXXXXXXXX";
 
     public PersistedJob PersistedSyncJob(string? id = null) =>
-        new(Core.Persistence.JobId.With(id ?? JobId), TestService.SyncDescriptor(), string.Empty);
+        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? JobId), TestService.SyncDescriptor());
 
     public PersistedJob PersistedAsyncJob(string? id = null) =>
-        new(Core.Persistence.JobId.With(id ?? JobId), TestService.AsyncDescriptor(), string.Empty);
+        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? JobId), TestService.AsyncDescriptor());
 
     public PersistedJob PersistedExcJob(string? id = null) =>
-        new(Core.Persistence.JobId.With(id ?? JobId), TestService.ExceptionDescriptor(), string.Empty);
+        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? JobId), TestService.ExceptionDescriptor());
 }

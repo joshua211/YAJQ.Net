@@ -33,7 +33,7 @@ public class UpdateJobTests : TestBase
         var pers = new Persistence.Memory.MemoryPersistence();
         await pers.SaveJobAsync(job);
         var conc = "ASDF";
-        job.ConcurrencyTag = conc;
+        job.SetTag(conc);
 
         //Act
         var update = await pers.UpdateJobAsync(job);

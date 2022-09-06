@@ -18,7 +18,7 @@ public class JobRepository : IJobRepository
     public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null)
     {
         var jobId = id is null ? JobId.New : JobId.With(id);
-        var job = new PersistedJob(jobId, descriptor, string.Empty);
+        var job = PersistedJob.Asap(jobId, descriptor);
         var result = await persistence.SaveJobAsync(job);
 
         Update?.Invoke(this, new JobEvent(jobId, JobState.Pending));
@@ -50,7 +50,7 @@ public class JobRepository : IJobRepository
         if (!string.IsNullOrWhiteSpace(job.Value.ConcurrencyTag))
             return Error.AlreadyMarked();
 
-        job.Value.ConcurrencyTag = concurrencyMark;
+        job.Value.SetTag(concurrencyMark);
         var updateResult = await persistence.UpdateJobAsync(job.Value);
 
         return updateResult.Match<ExecutionResult<PersistedJob>>(success => job.Value, error => error);
@@ -62,14 +62,16 @@ public class JobRepository : IJobRepository
         if (!get.WasSuccess) return get.Error;
 
         var job = get.Value;
-        job.State = wasSuccess ? JobState.Completed : JobState.Failed;
+        if (wasSuccess)
+            job.Completed();
+        else
+            job.Failed();
 
         var update = await persistence.UpdateJobAsync(job);
         if (!update.WasSuccess)
             return update.Error;
 
         var result = await persistence.ArchiveJobAsync(job);
-
         Update?.Invoke(this, new JobEvent(JobId.With(jobId), wasSuccess ? JobState.Completed : JobState.Failed));
 
         return result.WasSuccess ? ExecutionResult<Success>.Success : result.Error;
