@@ -18,6 +18,7 @@ public class JobHandlerTests : IntegrationTest
     public JobHandlerTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         this.helper = outputHelper;
+        StartJobHandler();
     }
 
     protected override IServiceCollection Configure(IServiceCollection collection)
@@ -32,7 +33,6 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var jobId = JobId.New.Value;
-        StartJobHandler();
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoAsync(jobId), jobId);
@@ -46,11 +46,10 @@ public class JobHandlerTests : IntegrationTest
     public async Task CanProcessMultipleJobs()
     {
         //Arrange
-        StartJobHandler();
 
         //Act
-        var ids = await AddJobs(20);
-        await WaitForCompletionAsync(ids.ToList(), 2000);
+        var ids = await AddJobs(12);
+        await WaitForCompletionAsync(ids.ToList(), 5000);
 
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
@@ -63,7 +62,6 @@ public class JobHandlerTests : IntegrationTest
         var value = JobId.New;
         var id1 = JobId.New.Value;
         var id2 = JobId.New.Value;
-        StartJobHandler();
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoAsync(value), id1);
@@ -80,7 +78,6 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var id = JobId.New;
-        StartJobHandler();
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoAsync(id), id);
@@ -96,7 +93,6 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var id = JobId.New;
-        StartJobHandler();
 
         //Act
         await JobQueue.EnqueueJob(() => Service.DoExceptionAsync(), id);

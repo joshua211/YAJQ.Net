@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Fastjob.Core.JobProcessor;
+﻿using Fastjob.Core.JobProcessor;
 using Fastjob.Core.Persistence;
 using Fastjob.Core.Utils;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ namespace Fastjob.Core.JobHandler;
 public class MultiProcessorJobHandler : IJobHandler
 {
     private readonly ILogger<MultiProcessorJobHandler> logger;
-    private readonly ConcurrentQueue<string> openJobs;
     private readonly FastjobOptions options;
     private readonly IJobProcessorFactory processorFactory;
     private readonly IJobRepository repository;
@@ -26,7 +24,6 @@ public class MultiProcessorJobHandler : IJobHandler
         this.processorFactory = processorFactory;
         this.selectionStrategy = selectionStrategy;
 
-        openJobs = new ConcurrentQueue<string>();
         source = new CancellationTokenSource();
 
         foreach (var _ in Enumerable.Range(0, options.NumberOfProcessors))
@@ -63,9 +60,6 @@ public class MultiProcessorJobHandler : IJobHandler
         string? nextJob = null;
         while (nextJob is null)
         {
-            if (openJobs.TryDequeue(out nextJob))
-                continue;
-
             var nextPersistedJob = await repository.GetNextJobAsync();
             if (!nextPersistedJob.WasSuccess
                 || !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyTag)
@@ -114,7 +108,6 @@ public class MultiProcessorJobHandler : IJobHandler
         if (e.State != JobState.Pending)
             return;
 
-        openJobs.Enqueue(e.JobId);
         source.Cancel();
         source = new CancellationTokenSource();
     }

@@ -44,6 +44,7 @@ public class IncreaseCursorTests : TestBase
         //Arrange
         var pers = new Persistence.Memory.MemoryPersistence();
         await pers.SaveJobAsync(PersistedSyncJob());
+        await pers.SaveJobAsync(PersistedSyncJob());
 
         //Act
         await pers.IncreaseCursorAsync();
@@ -51,7 +52,7 @@ public class IncreaseCursorTests : TestBase
 
         //Assert
         cursor.WasSuccess.Should().BeTrue();
-        cursor.Value.CurrentCursor.Should().Be(0);
-        cursor.Value.MaxCursor.Should().Be(1);
+        cursor.Value.CurrentCursor.Should().Be(1);
+        cursor.Value.MaxCursor.Should().Be(2);
     }
 }

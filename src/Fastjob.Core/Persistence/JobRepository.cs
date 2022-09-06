@@ -20,7 +20,7 @@ public class JobRepository : IJobRepository
         var jobId = id is null ? JobId.New : JobId.With(id);
         var job = new PersistedJob(jobId, descriptor, string.Empty);
         var result = await persistence.SaveJobAsync(job);
-        
+
         Update?.Invoke(this, new JobEvent(jobId, JobState.Pending));
 
         return result.WasSuccess ? jobId.Value : Error.StorageError();
@@ -31,8 +31,6 @@ public class JobRepository : IJobRepository
         var job = await persistence.GetJobAtCursorAsync();
         if (!job.WasSuccess)
             return job.Error;
-
-        await persistence.IncreaseCursorAsync();
 
         return job.Value;
     }

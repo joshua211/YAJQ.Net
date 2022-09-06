@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Fastjob.Core.Persistence;
 using FluentAssertions;
 using Xunit;
 
@@ -36,16 +35,12 @@ public class GetJobAtCursorTests : TestBase
         //Act
         var result1 = await pers.GetJobAtCursorAsync();
         var result2 = await pers.GetJobAtCursorAsync();
-        await pers.IncreaseCursorAsync();
-        var result3 = await pers.GetJobAtCursorAsync();
 
         //Arrange
         result1.WasSuccess.Should().BeTrue();
         result1.Value.Id.Value.Should().Be(JobId);
+
         result2.WasSuccess.Should().BeTrue();
-        result2.Value.Id.Value.Should().Be(JobId);
-        
-        result3.WasSuccess.Should().BeTrue();
-        result3.Value.Id.Value.Should().Be("ASDF");
+        result2.Value.Id.Value.Should().Be("ASDF");
     }
 }

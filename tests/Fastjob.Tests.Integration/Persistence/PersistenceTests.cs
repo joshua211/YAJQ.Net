@@ -119,6 +119,6 @@ public abstract class PersistenceTests : IntegrationTest
 
         //Assert
         result.WasSuccess.Should().BeTrue();
-        result.Value.CurrentCursor.Should().Be(1);
+        result.Value.CurrentCursor.Should().Be(2);
     }
 }
