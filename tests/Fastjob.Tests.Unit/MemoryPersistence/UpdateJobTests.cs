@@ -41,7 +41,7 @@ public class UpdateJobTests : TestBase
         //Arrange
         update.WasSuccess.Should().BeTrue();
         var persistedtJob = await pers.GetJobAsync(JobId);
-        persistedtJob.Value.ConcurrencyTag.Should().Be(conc);
+        persistedtJob.Value.ConcurrencyToken.Should().Be(conc);
     }
 
     [Fact]

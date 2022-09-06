@@ -42,4 +42,9 @@ public class RoundRobinProcessorSelectionStrategy : IProcessorSelectionStrategy
 
         return next;
     }
+
+    public IEnumerable<string> GetProcessorIds()
+    {
+        return availableProcessors.Select(p => p.ProcessorId);
+    }
 }

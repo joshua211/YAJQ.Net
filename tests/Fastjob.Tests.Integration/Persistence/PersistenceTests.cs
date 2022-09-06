@@ -57,7 +57,7 @@ public abstract class PersistenceTests : IntegrationTest
         //Assert
         result.WasSuccess.Should().BeTrue();
         var job = (await Repository.GetJobAsync(jobId)).Value;
-        job.ConcurrencyTag.Should().NotBeEmpty();
+        job.ConcurrencyToken.Should().NotBeEmpty();
     }
 
     [Fact]

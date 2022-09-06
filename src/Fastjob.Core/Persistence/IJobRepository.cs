@@ -11,4 +11,5 @@ public interface IJobRepository
     Task<ExecutionResult<PersistedJob>> GetJobAsync(string id);
     Task<ExecutionResult<PersistedJob>> TryGetAndMarkJobAsync(string jobId, string concurrencyMark);
     Task<ExecutionResult<Success>> CompleteJobAsync(string jobId, bool wasSuccess = true);
+    Task<ExecutionResult<Success>> RefreshTokenAsync(JobId jobId, string token);
 }

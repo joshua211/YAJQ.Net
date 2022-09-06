@@ -47,7 +47,7 @@ public class JobRepository : IJobRepository
         if (!job.WasSuccess)
             return job.Error;
 
-        if (!string.IsNullOrWhiteSpace(job.Value.ConcurrencyTag))
+        if (!string.IsNullOrWhiteSpace(job.Value.ConcurrencyToken))
             return Error.AlreadyMarked();
 
         job.Value.SetTag(concurrencyMark);
@@ -75,6 +75,20 @@ public class JobRepository : IJobRepository
         Update?.Invoke(this, new JobEvent(JobId.With(jobId), wasSuccess ? JobState.Completed : JobState.Failed));
 
         return result.WasSuccess ? ExecutionResult<Success>.Success : result.Error;
+    }
+
+    public async Task<ExecutionResult<Success>> RefreshTokenAsync(JobId jobId, string token)
+    {
+        var job = await persistence.GetJobAsync(jobId);
+        if (!job.WasSuccess)
+            return job.Error;
+
+        if (job.Value.ConcurrencyToken != token)
+            return Error.WrongToken();
+
+        var update = await persistence.UpdateJobAsync(job.Value);
+
+        return !update.WasSuccess ? update.Error : ExecutionResult<Success>.Success;
     }
 
     private void OnNewJob(object? sender, string e)

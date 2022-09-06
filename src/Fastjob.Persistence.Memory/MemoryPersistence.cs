@@ -56,6 +56,7 @@ public class MemoryPersistence : IJobPersistence
                 return Error.NotFound();
 
             var list = jobs.ToList();
+            persistedJob.Refresh();
             list[index] = persistedJob;
             jobs = list.ToImmutableList();
         }

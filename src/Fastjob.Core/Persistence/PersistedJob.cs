@@ -5,14 +5,14 @@ namespace Fastjob.Core.Persistence;
 public class PersistedJob
 {
     public PersistedJob(JobId id, IJobDescriptor descriptor, DateTimeOffset creationTime, DateTimeOffset scheduledTime,
-        DateTimeOffset lastUpdated, string concurrencyTag, JobState state, JobType jobType)
+        DateTimeOffset lastUpdated, string concurrencyToken, JobState state, JobType jobType)
     {
         Id = id;
         Descriptor = descriptor;
         CreationTime = creationTime;
         ScheduledTime = scheduledTime;
         LastUpdated = lastUpdated;
-        ConcurrencyTag = concurrencyTag;
+        ConcurrencyToken = concurrencyToken;
         State = state;
         JobType = jobType;
     }
@@ -22,13 +22,13 @@ public class PersistedJob
     public DateTimeOffset CreationTime { get; private set; }
     public DateTimeOffset ScheduledTime { get; private set; }
     public DateTimeOffset LastUpdated { get; private set; }
-    public string ConcurrencyTag { get; private set; }
+    public string ConcurrencyToken { get; private set; }
     public JobState State { get; private set; }
     public JobType JobType { get; private set; }
 
     public void Refresh() => LastUpdated = DateTimeOffset.Now;
 
-    public void SetTag(string tag) => ConcurrencyTag = tag;
+    public void SetTag(string tag) => ConcurrencyToken = tag;
 
     public void Completed() => State = JobState.Completed;
 
