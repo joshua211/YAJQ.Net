@@ -35,7 +35,7 @@ public class JobHandlerTests : IntegrationTest
         var jobId = JobId.New.Value;
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(jobId), jobId);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(jobId), jobId);
         await WaitForCompletionAsync(jobId);
 
         //Assert
@@ -64,9 +64,9 @@ public class JobHandlerTests : IntegrationTest
         var id2 = JobId.New.Value;
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(value), id1);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(value), id1);
         await Task.Delay(500);
-        await JobQueue.EnqueueJob(() => Service.DoAsync(value), id2);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(value), id2);
         await WaitForCompletionAsync(new List<string> {id1, id2});
 
         //Assert
@@ -80,7 +80,7 @@ public class JobHandlerTests : IntegrationTest
         var id = JobId.New;
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(id), id);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(id), id);
         await WaitForCompletionAsync(id);
 
         //Assert
@@ -95,7 +95,7 @@ public class JobHandlerTests : IntegrationTest
         var id = JobId.New;
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoExceptionAsync(), id);
+        await JobQueue.EnqueueJobAsync(() => Service.DoExceptionAsync(), id);
         await WaitForCompletionAsync(id);
 
         //Assert

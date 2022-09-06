@@ -15,10 +15,13 @@ public class JobRepository : IJobRepository
 
     public event EventHandler<JobEvent> Update;
 
-    public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null)
+    public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null,
+        DateTimeOffset? scheduledTime = null)
     {
         var jobId = id is null ? JobId.New : JobId.With(id);
-        var job = PersistedJob.Asap(jobId, descriptor);
+        var job = scheduledTime is null
+            ? PersistedJob.Asap(jobId, descriptor)
+            : PersistedJob.Scheduled(jobId, descriptor, scheduledTime.Value);
         var result = await persistence.SaveJobAsync(job);
 
         Update?.Invoke(this, new JobEvent(jobId, JobState.Pending));

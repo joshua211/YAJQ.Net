@@ -7,8 +7,8 @@ namespace Fastjob.Example.Controllers;
 [Route("api/[controller]")]
 public class RequestController : ControllerBase
 {
-    private readonly IRequestHandler requestHandler;
     private readonly IJobQueue jobQueue;
+    private readonly IRequestHandler requestHandler;
 
     public RequestController(IRequestHandler requestHandler, IJobQueue jobQueue)
     {
@@ -17,12 +17,12 @@ public class RequestController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<string>> GetRequest([FromQuery]string token)
+    public async Task<ActionResult<string>> GetRequest([FromQuery] string token)
     {
         var request = requestHandler.GetRequest(token);
         if (request is null)
         {
-            await jobQueue.EnqueueJob(() => requestHandler.AddRequestAsync(token));
+            await jobQueue.EnqueueJobAsync(() => requestHandler.AddRequestAsync(token));
             return NotFound();
         }
 

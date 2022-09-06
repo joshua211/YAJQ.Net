@@ -26,6 +26,7 @@ public abstract class TestBase
         fakeProvider.GetService(typeof(TestService)).Returns(service);
         fakePersistence = Substitute.For<IJobPersistence>();
         fakeRepository = Substitute.For<IJobRepository>();
+        fakeRepository.AddJobAsync(default, default, default).ReturnsForAnyArgs(JobId);
         moduleHelper = new ModuleHelper();
         logger = Substitute.For<ILogger>();
         service = new TestService();
