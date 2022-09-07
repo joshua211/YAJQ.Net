@@ -87,6 +87,20 @@ public abstract class IntegrationTest : IDisposable
         return ids;
     }
 
+    protected async Task<IEnumerable<string>> ScheduleJobs(int amount)
+    {
+        var ids = new List<string>();
+        foreach (var i in Enumerable.Range(0, amount))
+        {
+            var id = JobId.New;
+            await Repository.AddJobAsync(AsyncService.Descriptor(id), id, DateTimeOffset.Now);
+
+            ids.Add(id);
+        }
+
+        return ids;
+    }
+
     public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 2000) =>
         await WaitForCompletionAsync(new List<string> {jobId}, maxWaitTime);
 

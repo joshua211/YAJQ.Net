@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Fastjob.Core.Persistence;
@@ -101,5 +102,32 @@ public class JobHandlerTests : IntegrationTest
         //Assert
         var archived = await Persistence.GetFailedJobsAsync();
         archived.Value.Should().Satisfy(job => job.Id == id.Value && job.State == JobState.Failed);
+    }
+
+    [Fact]
+    public async Task CanProcessScheduledJob()
+    {
+        //Arrange
+        var jobId = JobId.New.Value;
+
+        //Act
+        await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), DateTimeOffset.Now, jobId);
+        await WaitForCompletionAsync(jobId, 10000);
+
+        //Assert
+        CallReceiver.WasCalledXTimes(jobId).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CanProcessMultipleScheduledJobs()
+    {
+        //Arrange
+
+        //Act
+        var ids = await ScheduleJobs(12);
+        await WaitForCompletionAsync(ids.ToList(), 10000);
+
+        //Assert
+        ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
     }
 }

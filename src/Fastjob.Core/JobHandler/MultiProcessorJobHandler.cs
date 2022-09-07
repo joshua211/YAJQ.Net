@@ -31,6 +31,7 @@ public class MultiProcessorJobHandler : IJobHandler
 
         scheduledJobTimer = new Timer(options.ScheduledJobTimerInterval);
         scheduledJobTimer.Elapsed += OnScheduledTick;
+        scheduledJobTimer.Start();
         source = new CancellationTokenSource();
         scheduledJobs = new List<PersistedJob>();
 
@@ -53,11 +54,17 @@ public class MultiProcessorJobHandler : IJobHandler
             var nextJob = await WaitForNextJobIdAsync(cancellationToken);
             logger.LogTrace("Found open job: {Id}", nextJob);
 
-
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (!result.WasSuccess)
             {
                 logger.LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
+                continue;
+            }
+
+            if (result.Value.JobType == JobType.Scheduled)
+            {
+                logger.LogTrace("Scheduled job, adding to backlog");
+                scheduledJobs.Add(result.Value);
                 continue;
             }
 
@@ -142,14 +149,15 @@ public class MultiProcessorJobHandler : IJobHandler
 
     private async void OnScheduledTick(object? sender, ElapsedEventArgs e)
     {
-        foreach (var job in scheduledJobs)
+        foreach (var job in scheduledJobs.ToList())
         {
-            if (job.ScheduledTime >= DateTimeOffset.Now)
+            if (job.ScheduledTime < DateTimeOffset.Now)
             {
                 var processor = await selectionStrategy.GetNextProcessorAsync();
 
                 var _ = Task.Run(() => ProcessJobAsync(job, processor, CancellationToken.None))
                     .ConfigureAwait(false);
+                scheduledJobs.Remove(job);
             }
             else
             {
