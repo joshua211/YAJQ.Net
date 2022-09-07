@@ -77,6 +77,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
 
     private async Task<string> WaitForNextJobIdAsync(CancellationToken cancellationToken)
     {
+        //TODO check last job id == current job id
         string? nextJob = null;
         while (nextJob is null)
         {
@@ -175,7 +176,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
     }
 
     private bool IsHandlerResponsibleForJob(PersistedJob job) =>
-        selectionStrategy.GetProcessorIds().Contains(job.ConcurrencyToken);
+        job.ConcurrencyToken == HandlerId;
 
     private bool IsUpdateOverdue(PersistedJob job) =>
         DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);

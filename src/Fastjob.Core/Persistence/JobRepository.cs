@@ -50,7 +50,7 @@ public class JobRepository : IJobRepository
         if (!job.WasSuccess)
             return job.Error;
 
-        if (!string.IsNullOrWhiteSpace(job.Value.ConcurrencyToken))
+        if (!string.IsNullOrWhiteSpace(job.Value.ConcurrencyToken) && job.Value.ConcurrencyToken != concurrencyMark)
             return Error.AlreadyMarked();
 
         job.Value.SetTag(concurrencyMark);
