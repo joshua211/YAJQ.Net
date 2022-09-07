@@ -1,20 +1,17 @@
-﻿using System.Timers;
-using Fastjob.Core.JobProcessor;
+﻿using Fastjob.Core.JobProcessor;
 using Fastjob.Core.Persistence;
 using Fastjob.Core.Utils;
 using Microsoft.Extensions.Logging;
-using Timer = System.Timers.Timer;
 
 namespace Fastjob.Core.JobHandler;
 
-public class MultiProcessorJobHandler : IJobHandler
+public class MultiProcessorJobHandler : IJobHandler, IDisposable
 {
     private readonly ILogger<MultiProcessorJobHandler> logger;
     private readonly FastjobOptions options;
     private readonly IJobProcessorFactory processorFactory;
     private readonly IJobRepository repository;
     private readonly List<PersistedJob> scheduledJobs;
-    private readonly Timer scheduledJobTimer;
     private readonly IProcessorSelectionStrategy selectionStrategy;
     private CancellationTokenSource source;
 
@@ -29,9 +26,6 @@ public class MultiProcessorJobHandler : IJobHandler
         this.processorFactory = processorFactory;
         this.selectionStrategy = selectionStrategy;
 
-        scheduledJobTimer = new Timer(options.ScheduledJobTimerInterval);
-        scheduledJobTimer.Elapsed += OnScheduledTick;
-        scheduledJobTimer.Start();
         source = new CancellationTokenSource();
         scheduledJobs = new List<PersistedJob>();
 
@@ -45,10 +39,17 @@ public class MultiProcessorJobHandler : IJobHandler
         repository.Update += OnJobUpdate;
     }
 
+    public void Dispose()
+    {
+        source.Dispose();
+    }
+
     public string HandlerId { get; private set; }
 
     public async Task Start(CancellationToken cancellationToken)
     {
+        Task.Run(() => HandleScheduledJobs(cancellationToken), cancellationToken).ContinueWith(_ => { });
+
         while (!cancellationToken.IsCancellationRequested)
         {
             var nextJob = await WaitForNextJobIdAsync(cancellationToken);
@@ -147,24 +148,29 @@ public class MultiProcessorJobHandler : IJobHandler
         source = new CancellationTokenSource();
     }
 
-    private async void OnScheduledTick(object? sender, ElapsedEventArgs e)
+    private async void HandleScheduledJobs(CancellationToken token)
     {
-        foreach (var job in scheduledJobs.ToList())
+        while (!token.IsCancellationRequested)
         {
-            if (job.ScheduledTime < DateTimeOffset.Now)
+            foreach (var job in scheduledJobs.ToList())
             {
-                var processor = await selectionStrategy.GetNextProcessorAsync();
+                if (job.ScheduledTime < DateTimeOffset.Now)
+                {
+                    var processor = await selectionStrategy.GetNextProcessorAsync();
 
-                var _ = Task.Run(() => ProcessJobAsync(job, processor, CancellationToken.None))
-                    .ConfigureAwait(false);
-                scheduledJobs.Remove(job);
+                    var _ = Task.Run(() => ProcessJobAsync(job, processor, token), token)
+                        .ConfigureAwait(false);
+                    scheduledJobs.Remove(job);
+                }
+                else
+                {
+                    var result = await repository.RefreshTokenAsync(job.Id, HandlerId);
+                    if (!result.WasSuccess)
+                        logger.LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
+                }
             }
-            else
-            {
-                var result = await repository.RefreshTokenAsync(job.Id, HandlerId);
-                if (!result.WasSuccess)
-                    logger.LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
-            }
+
+            await Task.Delay(options.ScheduledJobTimerInterval, token).ContinueWith(_ => { });
         }
     }
 
