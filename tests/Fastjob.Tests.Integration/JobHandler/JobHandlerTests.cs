@@ -130,4 +130,19 @@ public class JobHandlerTests : IntegrationTest
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
     }
+
+    [Fact]
+    public async Task CanProcessScheduledJobInFuture()
+    {
+        //Arrange
+        var jobId = JobId.New.Value;
+        var scheduledTime = DateTimeOffset.Now.AddSeconds(5);
+
+        //Act
+        await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), scheduledTime, jobId);
+        await WaitForCompletionAsync(jobId, 60000);
+
+        //Assert
+        CallReceiver.WasCalledAt(jobId, scheduledTime).Should().BeTrue();
+    }
 }
