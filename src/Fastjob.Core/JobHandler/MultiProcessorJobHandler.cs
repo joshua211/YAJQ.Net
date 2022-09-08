@@ -29,7 +29,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         source = new CancellationTokenSource();
         scheduledJobs = new List<PersistedJob>();
 
-        HandlerId = $"{Environment.MachineName}:{DateTime.UtcNow:thhmmss}";
+        HandlerId = $"{Environment.MachineName}:{Guid.NewGuid().ToString().Split("-").First()}";
 
         foreach (var _ in Enumerable.Range(0, options.NumberOfProcessors))
         {
