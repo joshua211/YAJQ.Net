@@ -13,6 +13,6 @@ public abstract class JobProcessorBase : IJobProcessor
     public string ProcessorId { get; init; }
     public abstract bool IsProcessing { get; protected set; }
 
-    public abstract ExecutionResult<Success> ProcessJob(IJobDescriptor descriptor,
+    public abstract ExecutionResult<ProcessingResult> ProcessJob(IJobDescriptor descriptor,
         CancellationToken cancellationToken = default);
 }

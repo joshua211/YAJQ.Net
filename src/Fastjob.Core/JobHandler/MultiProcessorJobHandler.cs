@@ -127,7 +127,8 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             logger.LogWarning("Failed to process Job {Name} with Id {Id}: {Error}",
                 job.Descriptor.JobName, job.Id, processingResult.Error);
 
-            var complete = await repository.CompleteJobAsync(job.Id, false);
+            var complete = await repository.CompleteJobAsync(job.Id, HandlerId, processor.ProcessorId, TimeSpan.Zero,
+                processingResult.Error, null, false);
             if (!complete.WasSuccess)
                 logger.LogWarning("Failed to complete failed job {Name} with Id {Id}: {Error}",
                     job.Descriptor.JobName, job.Id, complete.Error);

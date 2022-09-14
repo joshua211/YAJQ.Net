@@ -8,6 +8,8 @@ public interface IJobProcessor
     string ProcessorId { get; }
     bool IsProcessing { get; }
 
-    ExecutionResult<Success> ProcessJob(IJobDescriptor descriptor,
+    ExecutionResult<ProcessingResult> ProcessJob(IJobDescriptor descriptor,
         CancellationToken cancellationToken = default);
 }
+
+public record ProcessingResult(TimeSpan ProcessingTime, Exception? LastException, int FailedAttempts);

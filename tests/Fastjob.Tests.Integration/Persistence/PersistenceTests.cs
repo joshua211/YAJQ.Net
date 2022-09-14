@@ -96,7 +96,7 @@ public abstract class PersistenceTests : IntegrationTest
     public async Task CanGetJobAtCursor()
     {
         //Arrange
-        var ids = await AddJobs(5);
+        var ids = await PublishJobs(5);
         await Persistence.IncreaseCursorAsync(); //cursor at 1
         await Persistence.IncreaseCursorAsync(); //cursor at 2
 
@@ -112,7 +112,7 @@ public abstract class PersistenceTests : IntegrationTest
     public async Task CanIncreaseCursor()
     {
         //Arrange
-        await AddJobs(5);
+        await PublishJobs(5);
 
         //Act
         var result = await Persistence.IncreaseCursorAsync();

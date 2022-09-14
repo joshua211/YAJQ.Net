@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using Fastjob.Core.Common;
 using Fastjob.Core.Interfaces;
 using Fastjob.Core.Utils;
@@ -12,6 +13,7 @@ public class DefaultJobProcessor : JobProcessorBase
     private readonly ILogger<DefaultJobProcessor> logger;
     private readonly IModuleHelper moduleHelper;
     private readonly IServiceProvider serviceProvider;
+    private readonly Stopwatch stopwatch;
 
     public DefaultJobProcessor(IModuleHelper moduleHelper, IServiceProvider serviceProvider,
         ILogger<DefaultJobProcessor> logger, ITransientFaultHandler faultHandler)
@@ -20,14 +22,22 @@ public class DefaultJobProcessor : JobProcessorBase
         this.serviceProvider = serviceProvider;
         this.logger = logger;
         this.faultHandler = faultHandler;
+
+        stopwatch = new Stopwatch();
     }
 
     public override bool IsProcessing { get; protected set; }
 
-    public override ExecutionResult<Success> ProcessJob(IJobDescriptor descriptor,
+    public override ExecutionResult<ProcessingResult> ProcessJob(IJobDescriptor descriptor,
         CancellationToken cancellationToken = default)
     {
+        long executionTimeInMs = 0;
+        //TODO count this
+        var failedAttempts = 0;
+
         IsProcessing = true;
+        stopwatch.Start();
+
         try
         {
             if (!moduleHelper.IsModuleLoaded(descriptor.ModuleName))
@@ -64,21 +74,24 @@ public class DefaultJobProcessor : JobProcessorBase
             {
                 logger.LogWarning(result.LastException, "Exception while trying to process Job {Name}",
                     descriptor.JobName);
-
-                return Error.ExecutionFailed();
+                return new ProcessingResult(TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds),
+                    result.LastException, 0);
             }
         }
         catch (Exception e)
         {
             logger.LogError(e, "Failed to execute job");
-            return Error.ExecutionFailed();
+            return new ProcessingResult(TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds), e, 0);
         }
         finally
         {
             IsProcessing = false;
+            stopwatch.Stop();
+            executionTimeInMs = stopwatch.ElapsedMilliseconds;
+            stopwatch.Reset();
         }
 
-        return new Success();
+        return new ProcessingResult(TimeSpan.FromMilliseconds(executionTimeInMs), null, failedAttempts);
     }
 
     private void Execute(MethodBase method, object jobObject, object[] args)

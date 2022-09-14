@@ -34,6 +34,12 @@ public class PersistedJob
 
     public void Failed() => State = JobState.Failed;
 
+    public ArchivedJob Archive(string handlerId, string processorId, TimeSpan executionTime)
+    {
+        return new ArchivedJob(Id, Descriptor, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, JobType,
+            DateTimeOffset.Now, "", "", TimeSpan.Zero, DateTimeOffset.Now - CreationTime);
+    }
+
     public static PersistedJob Asap(JobId id, IJobDescriptor descriptor) => new PersistedJob(id, descriptor,
         DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, string.Empty, JobState.Pending, JobType.Asap);
 

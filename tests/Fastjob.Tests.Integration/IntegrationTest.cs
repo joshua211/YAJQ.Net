@@ -68,12 +68,14 @@ public abstract class IntegrationTest : IDisposable
         return collection;
     }
 
-    protected void StartJobHandler()
+    protected void StartJobHandler(IJobHandler handler = null)
     {
+        handler ??= Handler;
+
         Task.Run(() => Handler.Start(handlerTokenSource.Token), handlerTokenSource.Token);
     }
 
-    protected async Task<IEnumerable<string>> AddJobs(int amount)
+    protected async Task<IEnumerable<string>> PublishJobs(int amount)
     {
         var ids = new List<string>();
         foreach (var i in Enumerable.Range(0, amount))
