@@ -57,7 +57,7 @@ public class DefaultJobProcessor : JobProcessorBase
 
             var jobObject = serviceProvider.GetService(jobType);
             if (jobObject is null)
-                return Error.ServiceNotFound();
+                return Error.ServiceNotFound(jobType.FullName!);
 
             var result = faultHandler.Try(() => Execute(methodBase, jobObject, descriptor.Args.ToArray()));
             if (!result.WasSuccess)

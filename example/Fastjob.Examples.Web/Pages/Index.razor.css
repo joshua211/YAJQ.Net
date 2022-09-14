@@ -1,0 +1,11 @@
+﻿.job-container {
+    margin-top: 10vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.job-list {
+    display: flex;
+    flex-direction: column;
+}

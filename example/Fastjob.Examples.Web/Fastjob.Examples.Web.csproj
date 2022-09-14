@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.9"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Fastjob.DependencyInjection\Fastjob.DependencyInjection.csproj" />
+        <ProjectReference Include="..\..\src\Fastjob.DependencyInjection\Fastjob.DependencyInjection.csproj"/>
     </ItemGroup>
 
 </Project>
