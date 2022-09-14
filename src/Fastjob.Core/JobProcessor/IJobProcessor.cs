@@ -12,4 +12,5 @@ public interface IJobProcessor
         CancellationToken cancellationToken = default);
 }
 
-public record ProcessingResult(TimeSpan ProcessingTime, Exception? LastException, int FailedAttempts);
+public record ProcessingResult(TimeSpan ProcessingTime, Exception? LastException, int FailedAttempts,
+    bool WasSuccess = true);

@@ -37,7 +37,10 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         collection.AddSingleton(Substitute.For<ILogger<MultiProcessorJobHandler>>());
         collection.AddTransient<IModuleHelper, ModuleHelper>();
-        collection.AddTransient<FastjobOptions>();
+        collection.AddSingleton<FastjobOptions>(new FastjobOptions
+        {
+            TransientFaultMaxTries = 1,
+        });
         collection.AddLogging();
         collection = Configure(collection);
 

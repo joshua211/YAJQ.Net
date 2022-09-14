@@ -75,13 +75,13 @@ public class DefaultJobProcessor : JobProcessorBase
                 logger.LogWarning(result.LastException, "Exception while trying to process Job {Name}",
                     descriptor.JobName);
                 return new ProcessingResult(TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds),
-                    result.LastException, 0);
+                    result.LastException, 0, false);
             }
         }
         catch (Exception e)
         {
             logger.LogError(e, "Failed to execute job");
-            return new ProcessingResult(TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds), e, 0);
+            return new ProcessingResult(TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds), e, 0, false);
         }
         finally
         {

@@ -74,7 +74,7 @@ public class JobRepository : IJobRepository
     }
 
     public async Task<ExecutionResult<Success>> CompleteJobAsync(string jobId, string handlerId, string processorId,
-        TimeSpan executionTime, bool wasSuccess = true)
+        TimeSpan executionTime, Error? lastError, Exception? lastException, bool wasSuccess = true)
     {
         var get = await persistence.GetJobAsync(jobId);
         if (!get.WasSuccess) return get.Error;

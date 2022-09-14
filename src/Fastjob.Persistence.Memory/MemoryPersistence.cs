@@ -10,7 +10,6 @@ public class MemoryPersistence : IJobPersistence
     private ImmutableList<PersistedJob> archivedJobs;
     private JobCursor cursor;
     private ImmutableList<PersistedJob> jobs;
-    private string s;
 
     public MemoryPersistence()
     {
@@ -18,7 +17,6 @@ public class MemoryPersistence : IJobPersistence
         jobs = ImmutableList<PersistedJob>.Empty;
         archivedJobs = ImmutableList<PersistedJob>.Empty;
         cursor = JobCursor.Empty;
-        s = Guid.NewGuid().ToString();
     }
 
     public event EventHandler<string>? NewJob;
