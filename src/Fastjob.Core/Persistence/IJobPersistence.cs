@@ -13,7 +13,11 @@ public interface IJobPersistence
     Task<ExecutionResult<Success>> ArchiveJobAsync(PersistedJob job);
     Task<ExecutionResult<JobCursor>> IncreaseCursorAsync();
     Task<ExecutionResult<PersistedJob>> GetJobAtCursorAsync();
+
     Task<ExecutionResult<JobCursor>> GetCursorAsync();
+
+    //TODO Create IJobArchive
     Task<ExecutionResult<IEnumerable<PersistedJob>>> GetCompletedJobsAsync();
+    Task<ExecutionResult<IEnumerable<PersistedJob>>> GetArchivedJobsAsync();
     Task<ExecutionResult<IEnumerable<PersistedJob>>> GetFailedJobsAsync();
 }

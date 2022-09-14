@@ -10,13 +10,15 @@ public class MemoryPersistence : IJobPersistence
     private ImmutableList<PersistedJob> archivedJobs;
     private JobCursor cursor;
     private ImmutableList<PersistedJob> jobs;
+    private string s;
 
     public MemoryPersistence()
     {
         jobLock = new object();
         jobs = ImmutableList<PersistedJob>.Empty;
         archivedJobs = ImmutableList<PersistedJob>.Empty;
-        cursor = new JobCursor(0, 0);
+        cursor = JobCursor.Empty;
+        s = Guid.NewGuid().ToString();
     }
 
     public event EventHandler<string>? NewJob;
@@ -54,6 +56,7 @@ public class MemoryPersistence : IJobPersistence
                 return Error.NotFound();
 
             var list = jobs.ToList();
+            persistedJob.Refresh();
             list[index] = persistedJob;
             jobs = list.ToImmutableList();
         }
@@ -81,7 +84,7 @@ public class MemoryPersistence : IJobPersistence
         lock (jobs)
         {
             jobs = ImmutableList<PersistedJob>.Empty;
-            cursor = new JobCursor(0, 0);
+            cursor = JobCursor.Empty;
         }
 
         return Task.FromResult(ExecutionResult<Success>.Success);
@@ -100,7 +103,10 @@ public class MemoryPersistence : IJobPersistence
 
     public Task<ExecutionResult<JobCursor>> IncreaseCursorAsync()
     {
-        cursor = cursor.Increase();
+        lock (jobLock)
+        {
+            cursor = cursor.Increase();
+        }
 
         return Task.FromResult<ExecutionResult<JobCursor>>(cursor);
     }
@@ -109,10 +115,11 @@ public class MemoryPersistence : IJobPersistence
     {
         lock (jobLock)
         {
-            if (cursor.CurrentCursor > jobs.Count - 1)
+            if (cursor.MaxCursor == 0)
                 return Task.FromResult<ExecutionResult<PersistedJob>>(Error.CursorOutOfRange());
 
-            var job = jobs[cursor.CurrentCursor];
+            var job = jobs[cursor.CurrentCursor - 1];
+            cursor = cursor.Increase();
             return Task.FromResult<ExecutionResult<PersistedJob>>(job);
         }
     }
@@ -127,6 +134,11 @@ public class MemoryPersistence : IJobPersistence
         var completedJobs = archivedJobs.Where(j => j.State == JobState.Completed);
 
         return new ExecutionResult<IEnumerable<PersistedJob>>(completedJobs);
+    }
+
+    public Task<ExecutionResult<IEnumerable<PersistedJob>>> GetArchivedJobsAsync()
+    {
+        return Task.FromResult<ExecutionResult<IEnumerable<PersistedJob>>>(archivedJobs);
     }
 
     public async Task<ExecutionResult<IEnumerable<PersistedJob>>> GetFailedJobsAsync()

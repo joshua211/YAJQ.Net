@@ -14,27 +14,41 @@ public class JobQueue : IJobQueue
         this.jobRepository = jobRepository;
     }
 
-    public async Task<ExecutionResult<Success>> EnqueueJob(Expression<Action> expression, string? jobId = null)
+    public async Task<ExecutionResult<Success>> EnqueueJobAsync(Expression<Action> expression, string? jobId = null)
     {
-        var visitor = new FieldToConstantArgumentVisitor();
-        var resolvedExpression = (Expression<Action>) visitor.Visit(expression);
+        var descriptor = ToJobDescriptor(expression);
+        var result = await jobRepository.AddJobAsync(descriptor, jobId);
 
-        var methodExpression = (MethodCallExpression) resolvedExpression.Body;
-        var method = methodExpression.Method;
-        var args = methodExpression.Arguments.Select(arg =>
-        {
-            var value = ((ConstantExpression) arg).Value!;
-            return value;
-        }).ToList();
-
-        var descriptor = ToJobDescriptor(method, args);
-
-        await jobRepository.AddJobAsync(descriptor, jobId);
-
-        return new Success();
+        return result.WasSuccess ? new Success() : result.Error;
     }
 
-    public async Task<ExecutionResult<Success>> EnqueueJob<T>(Expression<Func<T>> expression, string? jobId = null)
+    public async Task<ExecutionResult<Success>> EnqueueJobAsync<T>(Expression<Func<T>> expression, string? jobId = null)
+    {
+        var descriptor = ToJobDescriptor(expression);
+        var result = await jobRepository.AddJobAsync(descriptor, jobId);
+
+        return result.WasSuccess ? new Success() : result.Error;
+    }
+
+    public async Task<ExecutionResult<Success>> ScheduleJobAsync(Expression<Action> expression,
+        DateTimeOffset scheduleTime, string? jobId = null)
+    {
+        var descriptor = ToJobDescriptor(expression);
+        var result = await jobRepository.AddJobAsync(descriptor, jobId, scheduleTime);
+
+        return result.WasSuccess ? new Success() : result.Error;
+    }
+
+    public async Task<ExecutionResult<Success>> ScheduleJobAsync<T>(Expression<Func<T>> expression,
+        DateTimeOffset scheduleTime, string? jobId = null)
+    {
+        var descriptor = ToJobDescriptor(expression);
+        var result = await jobRepository.AddJobAsync(descriptor, jobId, scheduleTime);
+
+        return result.WasSuccess ? new Success() : result.Error;
+    }
+
+    private static JobDescriptor ToJobDescriptor<T>(Expression<Func<T>> expression)
     {
         var visitor = new FieldToConstantArgumentVisitor();
         var resolvedExpression = (Expression<Func<T>>) visitor.Visit(expression);
@@ -47,11 +61,23 @@ public class JobQueue : IJobQueue
             return value;
         });
 
-        var descriptor = ToJobDescriptor(method, args);
+        return ToJobDescriptor(method, args);
+    }
 
-        await jobRepository.AddJobAsync(descriptor, jobId);
+    private static JobDescriptor ToJobDescriptor(Expression<Action> expression)
+    {
+        var visitor = new FieldToConstantArgumentVisitor();
+        var resolvedExpression = (Expression<Action>) visitor.Visit(expression);
 
-        return new Success();
+        var methodExpression = (MethodCallExpression) resolvedExpression.Body;
+        var method = methodExpression.Method;
+        var args = methodExpression.Arguments.Select(arg =>
+        {
+            var value = ((ConstantExpression) arg).Value!;
+            return value;
+        });
+
+        return ToJobDescriptor(method, args);
     }
 
     private static JobDescriptor ToJobDescriptor(MethodInfo method, IEnumerable<object> args)

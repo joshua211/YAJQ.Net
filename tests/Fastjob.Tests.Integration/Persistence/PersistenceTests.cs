@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Fastjob.Core.Common;
 using Fastjob.Core.Persistence;
 using Fastjob.Tests.Shared;
@@ -56,7 +57,7 @@ public abstract class PersistenceTests : IntegrationTest
         //Assert
         result.WasSuccess.Should().BeTrue();
         var job = (await Repository.GetJobAsync(jobId)).Value;
-        job.ConcurrencyTag.Should().NotBeEmpty();
+        job.ConcurrencyToken.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public abstract class PersistenceTests : IntegrationTest
     public async Task CanGetJobAtCursor()
     {
         //Arrange
-        await AddJobs(5);
+        var ids = await AddJobs(5);
         await Persistence.IncreaseCursorAsync(); //cursor at 1
         await Persistence.IncreaseCursorAsync(); //cursor at 2
 
@@ -104,7 +105,7 @@ public abstract class PersistenceTests : IntegrationTest
 
         //Assert
         result.WasSuccess.Should().BeTrue();
-        result.Value.Id.Value.Should().Be("2");
+        result.Value.Id.Value.Should().Be(ids.ToList()[2]);
     }
 
     [Fact]
@@ -118,6 +119,6 @@ public abstract class PersistenceTests : IntegrationTest
 
         //Assert
         result.WasSuccess.Should().BeTrue();
-        result.Value.CurrentCursor.Should().Be(1);
+        result.Value.CurrentCursor.Should().Be(2);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -33,6 +32,7 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IJobHandler, MultiProcessorJobHandler>();
         collection.AddTransient<IAsyncService, AsyncService>();
         collection.AddTransient<AsyncService, AsyncService>();
+        collection.AddTransient<ITransientFaultHandler, DefaultTransientFaultHandler>();
         collection.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         collection.AddSingleton(Substitute.For<ILogger<MultiProcessorJobHandler>>());
@@ -59,7 +59,8 @@ public abstract class IntegrationTest : IDisposable
 
     public void Dispose()
     {
-        handlerTokenSource.Dispose();
+        handlerTokenSource.Cancel();
+        (Provider as IDisposable)?.Dispose();
     }
 
     protected virtual IServiceCollection Configure(IServiceCollection collection)
@@ -69,7 +70,7 @@ public abstract class IntegrationTest : IDisposable
 
     protected void StartJobHandler()
     {
-        Task.Run(() => Handler.Start(handlerTokenSource.Token));
+        Task.Run(() => Handler.Start(handlerTokenSource.Token), handlerTokenSource.Token);
     }
 
     protected async Task<IEnumerable<string>> AddJobs(int amount)
@@ -86,23 +87,32 @@ public abstract class IntegrationTest : IDisposable
         return ids;
     }
 
+    protected async Task<IEnumerable<string>> ScheduleJobs(int amount)
+    {
+        var ids = new List<string>();
+        foreach (var i in Enumerable.Range(0, amount))
+        {
+            var id = JobId.New;
+            await Repository.AddJobAsync(AsyncService.Descriptor(id), id, DateTimeOffset.Now);
+
+            ids.Add(id);
+        }
+
+        return ids;
+    }
+
     public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 2000) =>
         await WaitForCompletionAsync(new List<string> {jobId}, maxWaitTime);
 
     public async Task WaitForCompletionAsync(List<string> ids, int maxWaitTime = 2000)
     {
-        var completedIds = new ConcurrentBag<string>();
-        Repository.Update += (s, e) =>
-        {
-            if (e.State is JobState.Completed or JobState.Failed)
-                completedIds.Add(e.JobId);
-        };
-
         var tries = 0;
+        IEnumerable<string> completedIds;
         do
         {
             await Task.Delay(100);
             tries++;
+            completedIds = (await Persistence.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
             if ((tries * 100) % maxWaitTime == 0)
                 break;
         } while (!ids.All(s => completedIds.Contains(s)));

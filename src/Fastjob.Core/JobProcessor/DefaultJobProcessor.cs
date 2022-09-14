@@ -8,16 +8,18 @@ namespace Fastjob.Core.JobProcessor;
 
 public class DefaultJobProcessor : JobProcessorBase
 {
+    private readonly ITransientFaultHandler faultHandler;
     private readonly ILogger<DefaultJobProcessor> logger;
     private readonly IModuleHelper moduleHelper;
     private readonly IServiceProvider serviceProvider;
 
     public DefaultJobProcessor(IModuleHelper moduleHelper, IServiceProvider serviceProvider,
-        ILogger<DefaultJobProcessor> logger)
+        ILogger<DefaultJobProcessor> logger, ITransientFaultHandler faultHandler)
     {
         this.moduleHelper = moduleHelper;
         this.serviceProvider = serviceProvider;
         this.logger = logger;
+        this.faultHandler = faultHandler;
     }
 
     public override bool IsProcessing { get; protected set; }
@@ -57,11 +59,13 @@ public class DefaultJobProcessor : JobProcessorBase
             if (jobObject is null)
                 return Error.ServiceNotFound();
 
-            object invokeResult = null;
-            invokeResult = methodBase.Invoke(jobObject, descriptor.Args.ToArray());
-            if (invokeResult is Task task)
+            var result = faultHandler.Try(() => Execute(methodBase, jobObject, descriptor.Args.ToArray()));
+            if (!result.WasSuccess)
             {
-                 task.Wait();
+                logger.LogWarning(result.LastException, "Exception while trying to process Job {Name}",
+                    descriptor.JobName);
+
+                return Error.ExecutionFailed();
             }
         }
         catch (Exception e)
@@ -75,6 +79,16 @@ public class DefaultJobProcessor : JobProcessorBase
         }
 
         return new Success();
+    }
+
+    private void Execute(MethodBase method, object jobObject, object[] args)
+    {
+        object invokeResult = null;
+        invokeResult = method.Invoke(jobObject, args);
+        if (invokeResult is Task task)
+        {
+            task.Wait();
+        }
     }
 
     private static Type? GetType(string name)

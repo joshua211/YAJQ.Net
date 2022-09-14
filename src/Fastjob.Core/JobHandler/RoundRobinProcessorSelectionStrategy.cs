@@ -1,5 +1,4 @@
-﻿using Fastjob.Core.Common;
-using Fastjob.Core.JobProcessor;
+﻿using Fastjob.Core.JobProcessor;
 
 namespace Fastjob.Core.JobHandler;
 
@@ -35,12 +34,17 @@ public class RoundRobinProcessorSelectionStrategy : IProcessorSelectionStrategy
 
         var next = availableProcessors[cursor];
         cursor++;
-        var circuitBreaker = new CircuitBreak();
-        while (next.IsProcessing || !circuitBreaker.End)
+
+        while (next.IsProcessing)
         {
-            await circuitBreaker.Wait();
+            await Task.Delay(10);
         }
 
         return next;
+    }
+
+    public IEnumerable<string> GetProcessorIds()
+    {
+        return availableProcessors.Select(p => p.ProcessorId);
     }
 }

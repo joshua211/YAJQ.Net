@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Fastjob.Core.Persistence;
@@ -18,6 +19,7 @@ public class JobHandlerTests : IntegrationTest
     public JobHandlerTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         this.helper = outputHelper;
+        StartJobHandler();
     }
 
     protected override IServiceCollection Configure(IServiceCollection collection)
@@ -32,10 +34,9 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var jobId = JobId.New.Value;
-        StartJobHandler();
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(jobId), jobId);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(jobId), jobId);
         await WaitForCompletionAsync(jobId);
 
         //Assert
@@ -46,11 +47,10 @@ public class JobHandlerTests : IntegrationTest
     public async Task CanProcessMultipleJobs()
     {
         //Arrange
-        StartJobHandler();
 
         //Act
-        var ids = await AddJobs(20);
-        await WaitForCompletionAsync(ids.ToList(), 2000);
+        var ids = await AddJobs(12);
+        await WaitForCompletionAsync(ids.ToList(), 5000);
 
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
@@ -63,12 +63,11 @@ public class JobHandlerTests : IntegrationTest
         var value = JobId.New;
         var id1 = JobId.New.Value;
         var id2 = JobId.New.Value;
-        StartJobHandler();
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(value), id1);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(value), id1);
         await Task.Delay(500);
-        await JobQueue.EnqueueJob(() => Service.DoAsync(value), id2);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(value), id2);
         await WaitForCompletionAsync(new List<string> {id1, id2});
 
         //Assert
@@ -80,10 +79,9 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var id = JobId.New;
-        StartJobHandler();
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoAsync(id), id);
+        await JobQueue.EnqueueJobAsync(() => Service.DoAsync(id), id);
         await WaitForCompletionAsync(id);
 
         //Assert
@@ -96,14 +94,55 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var id = JobId.New;
-        StartJobHandler();
 
         //Act
-        await JobQueue.EnqueueJob(() => Service.DoExceptionAsync(), id);
+        await JobQueue.EnqueueJobAsync(() => Service.DoExceptionAsync(), id);
         await WaitForCompletionAsync(id);
 
         //Assert
         var archived = await Persistence.GetFailedJobsAsync();
         archived.Value.Should().Satisfy(job => job.Id == id.Value && job.State == JobState.Failed);
+    }
+
+    [Fact]
+    public async Task CanProcessScheduledJob()
+    {
+        //Arrange
+        var jobId = JobId.New.Value;
+
+        //Act
+        await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), DateTimeOffset.Now, jobId);
+        await WaitForCompletionAsync(jobId, 10000);
+
+        //Assert
+        CallReceiver.WasCalledXTimes(jobId).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CanProcessMultipleScheduledJobs()
+    {
+        //Arrange
+
+        //Act
+        var ids = await ScheduleJobs(12);
+        await WaitForCompletionAsync(ids.ToList(), 10000);
+
+        //Assert
+        ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
+    }
+
+    [Fact]
+    public async Task CanProcessScheduledJobInFuture()
+    {
+        //Arrange
+        var jobId = JobId.New.Value;
+        var scheduledTime = DateTimeOffset.Now.AddSeconds(5);
+
+        //Act
+        await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), scheduledTime, jobId);
+        await WaitForCompletionAsync(jobId, 60000);
+
+        //Assert
+        CallReceiver.WasCalledAt(jobId, scheduledTime).Should().BeTrue();
     }
 }

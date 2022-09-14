@@ -33,7 +33,7 @@ public class UpdateJobTests : TestBase
         var pers = new Persistence.Memory.MemoryPersistence();
         await pers.SaveJobAsync(job);
         var conc = "ASDF";
-        job.ConcurrencyTag = conc;
+        job.SetTag(conc);
 
         //Act
         var update = await pers.UpdateJobAsync(job);
@@ -41,7 +41,7 @@ public class UpdateJobTests : TestBase
         //Arrange
         update.WasSuccess.Should().BeTrue();
         var persistedtJob = await pers.GetJobAsync(JobId);
-        persistedtJob.Value.ConcurrencyTag.Should().Be(conc);
+        persistedtJob.Value.ConcurrencyToken.Should().Be(conc);
     }
 
     [Fact]

@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Fastjob.Core.JobQueue;
-using Fastjob.Core.Persistence;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
@@ -16,8 +16,8 @@ public class EnqueueJobTests : TestBase
         var queue = new Core.JobQueue.JobQueue(fakeRepository);
 
         //Act
-        var result = await queue.EnqueueJob(() => service.Something());
-        
+        var result = await queue.EnqueueJobAsync(() => service.Something());
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>());
@@ -31,8 +31,8 @@ public class EnqueueJobTests : TestBase
         var queue = new Core.JobQueue.JobQueue(fakeRepository);
 
         //Act
-        var result = await queue.EnqueueJob(() => service.SomethingWithValue(argument));
-        
+        var result = await queue.EnqueueJobAsync(() => service.SomethingWithValue(argument));
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>());
@@ -46,13 +46,13 @@ public class EnqueueJobTests : TestBase
         var queue = new Core.JobQueue.JobQueue(fakeRepository);
 
         //Act
-        var result = await queue.EnqueueJob(() => service.SomethingAsync());
-        
+        var result = await queue.EnqueueJobAsync(() => service.SomethingAsync());
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>());
     }
-    
+
     [Fact]
     public async Task CanEnqueueFuncWithArguments()
     {
@@ -61,10 +61,69 @@ public class EnqueueJobTests : TestBase
         var queue = new Core.JobQueue.JobQueue(fakeRepository);
 
         //Act
-        var result = await queue.EnqueueJob(() => service.SomethingWithValueAsync(argument));
-        
+        var result = await queue.EnqueueJobAsync(() => service.SomethingWithValueAsync(argument));
+
         //Assert
         result.WasSuccess.Should().BeTrue();
         fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>());
+    }
+
+    [Fact]
+    public async Task CanEnqueueScheduledActionWithoutArguments()
+    {
+        //Arrange
+        var queue = new Core.JobQueue.JobQueue(fakeRepository);
+
+        //Act
+        var result = await queue.ScheduleJobAsync(() => service.Something(), DateTimeOffset.Now);
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>(), null, Arg.Any<DateTimeOffset>());
+    }
+
+    [Fact]
+    public async Task CanEnqueueScheduledActionWithArguments()
+    {
+        //Arrange
+        var argument = 1;
+        var queue = new Core.JobQueue.JobQueue(fakeRepository);
+
+        //Act
+        var result = await queue.ScheduleJobAsync(() => service.SomethingWithValue(argument), DateTimeOffset.Now);
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>(), null, Arg.Any<DateTimeOffset>());
+    }
+
+    [Fact]
+    public async Task CanEnqueueScheduledFuncWithoutArguments()
+    {
+        //Arrange
+        var argument = 1;
+        var queue = new Core.JobQueue.JobQueue(fakeRepository);
+
+        //Act
+        var result = await queue.ScheduleJobAsync(() => service.SomethingAsync(), DateTimeOffset.Now);
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>(), null, Arg.Any<DateTimeOffset>());
+    }
+
+    [Fact]
+    public async Task CanEnqueueScheduledFuncWithArguments()
+    {
+        //Arrange
+        var argument = 1;
+        var queue = new Core.JobQueue.JobQueue(fakeRepository);
+
+        //Act
+        var result = await queue.ScheduleJobAsync(() => service.SomethingWithValueAsync(argument), DateTimeOffset.Now);
+
+        //Assert
+        result.WasSuccess.Should().BeTrue();
+        fakeRepository.Received().AddJobAsync(Arg.Any<JobDescriptor>(), null, Arg.Any<DateTimeOffset>());
     }
 }
