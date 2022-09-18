@@ -26,7 +26,7 @@ public abstract class TestBase
         fakeProvider.GetService(typeof(TestService)).Returns(service);
         fakePersistence = Substitute.For<IJobPersistence>();
         fakeRepository = Substitute.For<IJobRepository>();
-        fakeRepository.AddJobAsync(default, default, default).ReturnsForAnyArgs(JobId);
+        fakeRepository.AddJobAsync(default, default, default).ReturnsForAnyArgs(DefaultJobId);
         moduleHelper = new ModuleHelper();
         logger = Substitute.For<ILogger>();
         service = new TestService();
@@ -38,14 +38,14 @@ public abstract class TestBase
             Substitute.For<ILogger<DefaultJobProcessor>>(), transientFaultHandler));
     }
 
-    public string JobId => "XXXXXXXXXXXXXXXXX";
+    public string DefaultJobId => "XXXXXXXXXXXXXXXXX";
 
     public PersistedJob PersistedSyncJob(string? id = null) =>
-        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? JobId), TestService.SyncDescriptor());
+        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? DefaultJobId), TestService.SyncDescriptor());
 
     public PersistedJob PersistedAsyncJob(string? id = null) =>
-        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? JobId), TestService.AsyncDescriptor());
+        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? DefaultJobId), TestService.AsyncDescriptor());
 
     public PersistedJob PersistedExcJob(string? id = null) =>
-        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? JobId), TestService.ExceptionDescriptor());
+        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? DefaultJobId), TestService.ExceptionDescriptor());
 }

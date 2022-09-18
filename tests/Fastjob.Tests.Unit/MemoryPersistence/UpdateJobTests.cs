@@ -24,7 +24,7 @@ public class UpdateJobTests : TestBase
 
         //Arrange
         update.WasSuccess.Should().BeTrue();
-        var persistedtJob = await pers.GetJobAsync(JobId);
+        var persistedtJob = await pers.GetJobAsync(DefaultJobId);
         persistedtJob.Value.Descriptor.JobName.Should().Be(PersistedAsyncJob().Descriptor.JobName);
     }
 
@@ -37,14 +37,14 @@ public class UpdateJobTests : TestBase
         var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(job);
         var conc = "ASDF";
-        job.SetTag(conc);
+        job.SetToken(conc);
 
         //Act
         var update = await pers.UpdateJobAsync(job);
 
         //Arrange
         update.WasSuccess.Should().BeTrue();
-        var persistedtJob = await pers.GetJobAsync(JobId);
+        var persistedtJob = await pers.GetJobAsync(DefaultJobId);
         persistedtJob.Value.ConcurrencyToken.Should().Be(conc);
     }
 

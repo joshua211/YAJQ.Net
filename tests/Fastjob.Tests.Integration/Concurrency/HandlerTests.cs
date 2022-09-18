@@ -65,4 +65,39 @@ public class HandlerTests : ConcurrencyTest
         CallReceiver.WasCalledXTimes(id).Should().BeTrue();
         cts.Cancel();
     }
+
+    [Fact]
+    public async Task HandlerCanPickUpQueuedJob()
+    {
+        //Arrange
+        var cts = new CancellationTokenSource();
+        var id = (await PublishJobs(1)).First();
+
+        //Act
+        StartJobHandler(FirstJobHandler);
+        await WaitForCompletionAsync(id);
+
+        //Assert
+        CallReceiver.WasCalledXTimes(id);
+        cts.Cancel();
+    }
+
+    [Fact]
+    public async Task AllHandlersCanHandleJobsAtTheSameTime()
+    {
+        //Arrange
+        var cts = new CancellationTokenSource();
+        StartJobHandler(FirstJobHandler, cts.Token);
+        StartJobHandler(SecondJobHandler, cts.Token);
+
+        //Act
+        var ids = await PublishJobs(10);
+        await WaitForCompletionAsync(ids.ToList());
+        var archived = await Archive.GetArchivedJobsAsync();
+
+        //Assert
+        archived.Value.Should().Contain(job => job.HandlerId == FirstJobHandler.HandlerId);
+        archived.Value.Should().Contain(job => job.HandlerId == SecondJobHandler.HandlerId);
+        cts.Cancel();
+    }
 }

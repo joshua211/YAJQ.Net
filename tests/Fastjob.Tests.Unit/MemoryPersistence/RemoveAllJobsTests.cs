@@ -25,7 +25,7 @@ public class RemoveAllJobsTests : TestBase
 
         //Arrange
         rm.WasSuccess.Should().BeTrue();
-        var result1 = await pers.GetJobAsync(JobId);
+        var result1 = await pers.GetJobAsync(DefaultJobId);
         result1.WasSuccess.Should().BeFalse();
         result1.Error.Should().Be(Error.NotFound());
 

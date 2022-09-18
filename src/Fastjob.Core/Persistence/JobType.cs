@@ -2,6 +2,6 @@
 
 public enum JobType
 {
-    Asap,
+    Instant,
     Scheduled
 }

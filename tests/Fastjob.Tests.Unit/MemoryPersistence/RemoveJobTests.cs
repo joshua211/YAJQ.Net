@@ -19,11 +19,11 @@ public class RemoveJobTests : TestBase
         await pers.SaveJobAsync(job);
 
         //Act
-        var rm = await pers.RemoveJobAsync(JobId);
+        var rm = await pers.RemoveJobAsync(DefaultJobId);
 
         //Arrange
         rm.WasSuccess.Should().BeTrue();
-        var result = await pers.GetJobAsync(JobId);
+        var result = await pers.GetJobAsync(DefaultJobId);
         result.WasSuccess.Should().BeFalse();
         result.Error.Should().Be(Error.NotFound());
     }
@@ -36,7 +36,7 @@ public class RemoveJobTests : TestBase
         var pers = new Persistence.Memory.MemoryPersistence(arch);
 
         //Act
-        var rm = await pers.RemoveJobAsync(JobId);
+        var rm = await pers.RemoveJobAsync(DefaultJobId);
 
         //Arrange
         rm.WasSuccess.Should().BeFalse();
@@ -54,7 +54,7 @@ public class RemoveJobTests : TestBase
         var initialCursor = await pers.GetCursorAsync();
 
         //Act
-        await pers.RemoveJobAsync(JobId);
+        await pers.RemoveJobAsync(DefaultJobId);
 
         //Arrange
         var cursor = await pers.GetCursorAsync();

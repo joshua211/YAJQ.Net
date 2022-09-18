@@ -34,7 +34,7 @@ public class GetJobTests : TestBase
         var pers = new Persistence.Memory.MemoryPersistence(arch);
 
         //Act
-        var persistedJob = await pers.GetJobAsync(JobId);
+        var persistedJob = await pers.GetJobAsync(DefaultJobId);
 
         //Arrange
         persistedJob.WasSuccess.Should().BeFalse();

@@ -28,20 +28,32 @@ public class PersistedJob
 
     public void Refresh() => LastUpdated = DateTimeOffset.Now;
 
-    public void SetTag(string tag) => ConcurrencyToken = tag;
+    public void SetToken(string tag) => ConcurrencyToken = tag;
 
-    public void Completed() => State = JobState.Completed;
+    public void Complete()
+    {
+        if (State != JobState.Pending)
+            throw new Exception("Only a pending job can be completed");
 
-    public void Failed() => State = JobState.Failed;
+        State = JobState.Completed;
+    }
+
+    public void Fail()
+    {
+        if (State != JobState.Pending)
+            throw new Exception("Only a pending job can be failed");
+
+        State = JobState.Failed;
+    }
 
     public ArchivedJob Archive(string handlerId, string processorId, TimeSpan executionTime)
     {
         return new ArchivedJob(Id, Descriptor, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, JobType,
-            DateTimeOffset.Now, "", "", TimeSpan.Zero, DateTimeOffset.Now - CreationTime, State);
+            DateTimeOffset.Now, handlerId, processorId, executionTime, DateTimeOffset.Now - CreationTime, State);
     }
 
     public static PersistedJob Asap(JobId id, IJobDescriptor descriptor) => new PersistedJob(id, descriptor,
-        DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, string.Empty, JobState.Pending, JobType.Asap);
+        DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, string.Empty, JobState.Pending, JobType.Instant);
 
     public static PersistedJob Scheduled(JobId id, IJobDescriptor descriptor, DateTimeOffset scheduledTime) =>
         new PersistedJob(id, descriptor, DateTimeOffset.Now, scheduledTime, DateTimeOffset.Now, string.Empty,
