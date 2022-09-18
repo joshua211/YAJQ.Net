@@ -1,4 +1,5 @@
 ﻿using Fastjob.Core;
+using Fastjob.Core.Archive;
 using Fastjob.Core.JobHandler;
 using Fastjob.Core.JobProcessor;
 using Fastjob.Core.JobQueue;
@@ -47,7 +48,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         services.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         services.AddTransient<ITransientFaultHandler, DefaultTransientFaultHandler>();
-        services.AddSingleton<IJobPersistence>(new MemoryPersistence());
+        services.AddSingleton<IJobPersistence, MemoryPersistence>();
+        services.AddSingleton<IJobArchive, MemoryArchive>();
         services.AddTransient<FastjobOptions>(provider =>
             provider.GetRequiredService<IOptions<FastjobOptions>>().Value);
 

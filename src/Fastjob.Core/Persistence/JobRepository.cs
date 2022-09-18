@@ -89,7 +89,7 @@ public class JobRepository : IJobRepository
         if (!update.WasSuccess)
             return update.Error;
 
-        var result = await persistence.ArchiveJobAsync(job);
+        var result = await persistence.ArchiveJobAsync(job.Archive(handlerId, processorId, executionTime));
         Update?.Invoke(this, new JobEvent(JobId.With(jobId), wasSuccess ? JobState.Completed : JobState.Failed));
 
         return result.WasSuccess ? ExecutionResult<Success>.Success : result.Error;

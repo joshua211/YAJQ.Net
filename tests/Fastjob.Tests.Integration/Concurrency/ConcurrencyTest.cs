@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Fastjob.Core.Archive;
 using Fastjob.Core.JobHandler;
 using Fastjob.Core.Persistence;
 using Fastjob.Persistence.Memory;
@@ -23,7 +24,8 @@ public abstract class ConcurrencyTest : IntegrationTest
 
     protected override IServiceCollection Configure(IServiceCollection collection)
     {
-        collection.AddSingleton<IJobPersistence>(new MemoryPersistence());
+        collection.AddSingleton<IJobPersistence, MemoryPersistence>();
+        collection.AddSingleton<IJobArchive, MemoryArchive>();
         return base.Configure(collection);
     }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fastjob.Core;
+using Fastjob.Core.Archive;
 using Fastjob.Core.JobHandler;
 using Fastjob.Core.JobProcessor;
 using Fastjob.Core.JobQueue;
@@ -50,6 +51,7 @@ public abstract class IntegrationTest : IDisposable
         Persistence = Provider.GetRequiredService<IJobPersistence>();
         Service = Provider.GetRequiredService<IAsyncService>();
         Repository = Provider.GetRequiredService<IJobRepository>();
+        Archive = Provider.GetRequiredService<IJobArchive>();
     }
 
     protected IServiceProvider Provider { get; private set; }
@@ -59,6 +61,7 @@ public abstract class IntegrationTest : IDisposable
     protected IJobPersistence Persistence { get; private set; }
     protected ILogger Logger { get; private set; }
     protected IJobRepository Repository { get; private set; }
+    protected IJobArchive Archive { get; private set; }
 
     public void Dispose()
     {
@@ -117,7 +120,7 @@ public abstract class IntegrationTest : IDisposable
         {
             await Task.Delay(100);
             tries++;
-            completedIds = (await Persistence.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
+            completedIds = (await Archive.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
             if ((tries * 100) % maxWaitTime == 0)
                 break;
         } while (!ids.All(s => completedIds.Contains(s)));

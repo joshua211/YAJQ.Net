@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Fastjob.Core.Archive;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace Fastjob.Tests.Unit.MemoryPersistence;
@@ -10,7 +12,8 @@ public class IncreaseCursorTests : TestBase
     public async Task EmptyCollectionCursorStaysAtZero()
     {
         //Arrange
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
 
         //Act
         var initialCursor = await pers.GetCursorAsync();
@@ -26,7 +29,8 @@ public class IncreaseCursorTests : TestBase
     public async Task IncreasesCursorByOne()
     {
         //Arrange
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(PersistedSyncJob());
 
         //Act
@@ -42,7 +46,8 @@ public class IncreaseCursorTests : TestBase
     public async Task ResetsMaxCursorAtOverflow()
     {
         //Arrange
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(PersistedSyncJob());
         await pers.SaveJobAsync(PersistedSyncJob());
 

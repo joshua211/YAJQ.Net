@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Fastjob.Core.Archive;
 using Fastjob.Core.Common;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace Fastjob.Tests.Unit.MemoryPersistence;
@@ -12,7 +14,8 @@ public class UpdateJobTests : TestBase
     {
         //Arrange
         var job = PersistedSyncJob();
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(job);
         var updated = PersistedAsyncJob();
 
@@ -29,8 +32,9 @@ public class UpdateJobTests : TestBase
     public async Task UpdatesConcurrencyMark()
     {
         //Arrange
+        var arch = Substitute.For<IJobArchive>();
         var job = PersistedSyncJob();
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(job);
         var conc = "ASDF";
         job.SetTag(conc);
@@ -48,7 +52,8 @@ public class UpdateJobTests : TestBase
     public async Task ReturnsNotFoundError()
     {
         //Arrange
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         var updated = PersistedAsyncJob();
 
         //Act

@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Fastjob.Core.Archive;
 using Fastjob.Core.Common;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace Fastjob.Tests.Unit.MemoryPersistence;
@@ -12,12 +14,13 @@ public class GetJobTests : TestBase
     {
         //Arrange
         var job = PersistedSyncJob();
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(job);
 
         //Act
         var persistedJob = await pers.GetJobAsync(job.Id);
-        
+
         //Arrange
         persistedJob.WasSuccess.Should().BeTrue();
         persistedJob.Value.Id.Should().Be(job.Id);
@@ -27,14 +30,14 @@ public class GetJobTests : TestBase
     public async Task ReturnsNotFoundError()
     {
         //Arrange
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
 
         //Act
         var persistedJob = await pers.GetJobAsync(JobId);
-        
+
         //Arrange
         persistedJob.WasSuccess.Should().BeFalse();
         persistedJob.Error.Should().Be(Error.NotFound());
     }
-    
 }

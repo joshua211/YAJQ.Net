@@ -1,4 +1,5 @@
-﻿using Fastjob.Core.Persistence;
+﻿using Fastjob.Core.Archive;
+using Fastjob.Core.Persistence;
 using Fastjob.Persistence.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -13,7 +14,8 @@ public class MemoryPersistenceTests : PersistenceTests
 
     protected override IServiceCollection Configure(IServiceCollection collection)
     {
-        collection.AddSingleton<IJobPersistence>(new MemoryPersistence());
+        collection.AddSingleton<IJobPersistence, MemoryPersistence>();
+        collection.AddSingleton<IJobArchive, MemoryArchive>();
         return base.Configure(collection);
     }
 }

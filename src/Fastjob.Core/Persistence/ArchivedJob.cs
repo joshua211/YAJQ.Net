@@ -6,7 +6,7 @@ public class ArchivedJob
 {
     public ArchivedJob(JobId id, IJobDescriptor descriptor, DateTimeOffset creationTime, DateTimeOffset scheduledTime,
         DateTimeOffset lastUpdated, string lastConcurrencyToken, JobType jobType, DateTimeOffset archiveTime,
-        string handlerId, string processorId, TimeSpan executionTime, TimeSpan totalQueueTime)
+        string handlerId, string processorId, TimeSpan executionTime, TimeSpan totalQueueTime, JobState state)
     {
         Id = id;
         Descriptor = descriptor;
@@ -20,6 +20,7 @@ public class ArchivedJob
         ProcessorId = processorId;
         ExecutionTime = executionTime;
         TotalQueueTime = totalQueueTime;
+        State = state;
     }
 
     public JobId Id { get; private set; }
@@ -29,6 +30,7 @@ public class ArchivedJob
     public DateTimeOffset LastUpdated { get; private set; }
     public string LastConcurrencyToken { get; private set; }
     public JobType JobType { get; private set; }
+    public JobState State { get; private set; }
     public DateTimeOffset ArchiveTime { get; private set; }
     public string HandlerId { get; private set; }
     public string ProcessorId { get; private set; }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Fastjob.Core.Archive;
 using Fastjob.Core.Persistence;
 using Fastjob.Persistence.Memory;
 using Fastjob.Tests.Shared;
@@ -25,7 +26,7 @@ public class JobHandlerTests : IntegrationTest
     protected override IServiceCollection Configure(IServiceCollection collection)
     {
         collection.AddSingleton<IJobPersistence, MemoryPersistence>();
-
+        collection.AddSingleton<IJobArchive, MemoryArchive>();
         return base.Configure(collection);
     }
 
@@ -85,7 +86,7 @@ public class JobHandlerTests : IntegrationTest
         await WaitForCompletionAsync(id);
 
         //Assert
-        var archived = await Persistence.GetCompletedJobsAsync();
+        var archived = await Archive.GetCompletedJobsAsync();
         archived.Value.Should().Satisfy(job => job.Id == id.Value && job.State == JobState.Completed);
     }
 
@@ -100,7 +101,7 @@ public class JobHandlerTests : IntegrationTest
         await WaitForCompletionAsync(id);
 
         //Assert
-        var archived = await Persistence.GetFailedJobsAsync();
+        var archived = await Archive.GetFailedJobsAsync();
         archived.Value.Should().Satisfy(job => job.Id == id.Value && job.State == JobState.Failed);
     }
 

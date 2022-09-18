@@ -37,7 +37,7 @@ public class PersistedJob
     public ArchivedJob Archive(string handlerId, string processorId, TimeSpan executionTime)
     {
         return new ArchivedJob(Id, Descriptor, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, JobType,
-            DateTimeOffset.Now, "", "", TimeSpan.Zero, DateTimeOffset.Now - CreationTime);
+            DateTimeOffset.Now, "", "", TimeSpan.Zero, DateTimeOffset.Now - CreationTime, State);
     }
 
     public static PersistedJob Asap(JobId id, IJobDescriptor descriptor) => new PersistedJob(id, descriptor,

@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Fastjob.Core.Archive;
 using Fastjob.Core.Common;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace Fastjob.Tests.Unit.MemoryPersistence;
@@ -13,7 +15,8 @@ public class RemoveAllJobsTests : TestBase
         //Arrange
         var job1 = PersistedSyncJob();
         var job2 = PersistedSyncJob("ASDF");
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(job1);
         await pers.SaveJobAsync(job2);
 
@@ -25,7 +28,7 @@ public class RemoveAllJobsTests : TestBase
         var result1 = await pers.GetJobAsync(JobId);
         result1.WasSuccess.Should().BeFalse();
         result1.Error.Should().Be(Error.NotFound());
-        
+
         var result2 = await pers.GetJobAsync("ASDF");
         result2.WasSuccess.Should().BeFalse();
         result2.Error.Should().Be(Error.NotFound());
@@ -37,7 +40,8 @@ public class RemoveAllJobsTests : TestBase
         //Arrange
         var job1 = PersistedSyncJob();
         var job2 = PersistedSyncJob("ASDF");
-        var pers = new Persistence.Memory.MemoryPersistence();
+        var arch = Substitute.For<IJobArchive>();
+        var pers = new Persistence.Memory.MemoryPersistence(arch);
         await pers.SaveJobAsync(job1);
         await pers.SaveJobAsync(job2);
 
