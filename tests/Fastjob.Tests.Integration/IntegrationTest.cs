@@ -21,9 +21,12 @@ namespace Fastjob.Tests.Integration;
 public abstract class IntegrationTest : IDisposable
 {
     private readonly CancellationTokenSource handlerTokenSource;
+    private readonly TestLogger testLogger;
 
     public IntegrationTest(ITestOutputHelper outputHelper)
     {
+        testLogger = new TestLogger(outputHelper);
+        CallReceiver.TestLogger = testLogger;
         handlerTokenSource = new CancellationTokenSource();
 
         IServiceCollection collection = new ServiceCollection();
@@ -74,11 +77,11 @@ public abstract class IntegrationTest : IDisposable
         return collection;
     }
 
-    protected void StartJobHandler(IJobHandler handler = null)
+    protected void StartJobHandler(IJobHandler handler = null, CancellationToken? token = default)
     {
         handler ??= Handler;
-
-        Task.Run(() => Handler.Start(handlerTokenSource.Token), handlerTokenSource.Token);
+        token ??= handlerTokenSource.Token;
+        Task.Run(() => handler.Start(token.Value), token.Value);
     }
 
     protected async Task<IEnumerable<string>> PublishJobs(int amount)

@@ -40,4 +40,6 @@ public struct Error
     public static Error CursorOutOfRange() => new("The current cursor does not point to a job", 9);
 
     public static Error WrongToken() => new("The token provided for the refresh is not the same as the job token", 10);
+
+    public static Error OutdatedUpdate() => new("The expected value is outdated", 11);
 }

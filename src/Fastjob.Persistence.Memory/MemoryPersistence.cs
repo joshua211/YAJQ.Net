@@ -26,7 +26,8 @@ public class MemoryPersistence : IJobPersistence
     {
         lock (jobLock)
         {
-            jobs = jobs.Append(persistedJob).ToImmutableList();
+            var jobCopy = persistedJob.DeepCopy();
+            jobs = jobs.Append(jobCopy).ToImmutableList();
             cursor = cursor.IncreaseMax();
         }
 
@@ -43,10 +44,10 @@ public class MemoryPersistence : IJobPersistence
             job = jobs.FirstOrDefault(j => j.Id == id);
         }
 
-        return job is null ? Error.NotFound() : job;
+        return job is null ? Error.NotFound() : job.DeepCopy();
     }
 
-    public async Task<ExecutionResult<Success>> UpdateJobAsync(PersistedJob persistedJob)
+    public async Task<ExecutionResult<Success>> UpdateStateAsync(PersistedJob persistedJob, JobState expectedState)
     {
         lock (jobLock)
         {
@@ -55,6 +56,31 @@ public class MemoryPersistence : IJobPersistence
                 return Error.NotFound();
 
             var list = jobs.ToList();
+            var currentTrackedJob = list[index];
+            if (currentTrackedJob.State != expectedState)
+                return Error.OutdatedUpdate();
+
+            persistedJob.Refresh();
+            list[index] = persistedJob;
+            jobs = list.ToImmutableList();
+        }
+
+        return ExecutionResult<Success>.Success;
+    }
+
+    public async Task<ExecutionResult<Success>> UpdateTokenAsync(PersistedJob persistedJob, string expectedToken)
+    {
+        lock (jobLock)
+        {
+            var index = jobs.FindIndex(j => Equals(j.Id, persistedJob.Id));
+            if (index == -1)
+                return Error.NotFound();
+
+            var list = jobs.ToList();
+            var currentTrackedJob = list[index];
+            if (currentTrackedJob.ConcurrencyToken != expectedToken)
+                return Error.OutdatedUpdate();
+
             persistedJob.Refresh();
             list[index] = persistedJob;
             jobs = list.ToImmutableList();
@@ -126,5 +152,24 @@ public class MemoryPersistence : IJobPersistence
     public Task<ExecutionResult<JobCursor>> GetCursorAsync()
     {
         return Task.FromResult<ExecutionResult<JobCursor>>(cursor);
+    }
+
+
+    public async Task<ExecutionResult<Success>> UpdateJobAsync(PersistedJob persistedJob)
+    {
+        lock (jobLock)
+        {
+            var index = jobs.FindIndex(j => Equals(j.Id, persistedJob.Id));
+            if (index == -1)
+                return Error.NotFound();
+
+            var list = jobs.ToList();
+            var currentTrackedJob = list[index];
+            persistedJob.Refresh();
+            list[index] = persistedJob;
+            jobs = list.ToImmutableList();
+        }
+
+        return ExecutionResult<Success>.Success;
     }
 }

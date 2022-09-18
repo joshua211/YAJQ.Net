@@ -54,9 +54,14 @@ public class JobRepository : IJobRepository
             return Error.AlreadyMarked();
 
         job.Value.SetTag(concurrencyMark);
-        var updateResult = await persistence.UpdateJobAsync(job.Value);
+        var updateResult = await persistence.UpdateTokenAsync(job.Value, string.Empty);
 
-        return updateResult.Match<ExecutionResult<PersistedJob>>(success => job.Value, error => error);
+        return updateResult.Match<ExecutionResult<PersistedJob>>(success => job.Value, error => error.Code switch
+        {
+            //OutdatedUpdate means it was already marked
+            11 => Error.AlreadyMarked(),
+            _ => error
+        });
     }
 
     public async Task<ExecutionResult<Success>> RefreshTokenAsync(JobId jobId, string token)
@@ -68,7 +73,7 @@ public class JobRepository : IJobRepository
         if (job.Value.ConcurrencyToken != token)
             return Error.WrongToken();
 
-        var update = await persistence.UpdateJobAsync(job.Value);
+        var update = await persistence.UpdateTokenAsync(job.Value, job.Value.ConcurrencyToken);
 
         return !update.WasSuccess ? update.Error : ExecutionResult<Success>.Success;
     }
@@ -85,7 +90,7 @@ public class JobRepository : IJobRepository
         else
             job.Failed();
 
-        var update = await persistence.UpdateJobAsync(job);
+        var update = await persistence.UpdateStateAsync(job, JobState.Pending);
         if (!update.WasSuccess)
             return update.Error;
 

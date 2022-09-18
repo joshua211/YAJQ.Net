@@ -46,4 +46,17 @@ public class PersistedJob
     public static PersistedJob Scheduled(JobId id, IJobDescriptor descriptor, DateTimeOffset scheduledTime) =>
         new PersistedJob(id, descriptor, DateTimeOffset.Now, scheduledTime, DateTimeOffset.Now, string.Empty,
             JobState.Pending, JobType.Scheduled);
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not PersistedJob job)
+            return false;
+
+        return job.Id == Id && job.State == State && job.ConcurrencyToken == ConcurrencyToken &&
+               job.LastUpdated == LastUpdated && job.CreationTime == CreationTime && job.ScheduledTime == ScheduledTime;
+    }
+
+    public PersistedJob DeepCopy() =>
+        new(Id, Descriptor, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, State,
+            JobType);
 }
