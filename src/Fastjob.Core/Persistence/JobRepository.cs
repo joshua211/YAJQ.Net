@@ -50,11 +50,10 @@ public class JobRepository : IJobRepository
         if (!job.WasSuccess)
             return job.Error;
 
-        if (!string.IsNullOrWhiteSpace(job.Value.ConcurrencyToken) && job.Value.ConcurrencyToken != concurrencyMark)
-            return Error.AlreadyMarked();
-
+        var oldToken = job.Value.ConcurrencyToken;
         job.Value.SetToken(concurrencyMark);
-        var updateResult = await persistence.UpdateTokenAsync(job.Value, string.Empty);
+
+        var updateResult = await persistence.UpdateTokenAsync(job.Value, oldToken);
 
         return updateResult.Match<ExecutionResult<PersistedJob>>(success => job.Value, error => error.Code switch
         {

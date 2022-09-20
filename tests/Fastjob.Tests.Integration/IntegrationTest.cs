@@ -13,7 +13,6 @@ using Fastjob.Core.Utils;
 using Fastjob.Tests.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
 using Xunit.Abstractions;
 
 namespace Fastjob.Tests.Integration;
@@ -39,13 +38,16 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<ITransientFaultHandler, DefaultTransientFaultHandler>();
         collection.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
-        collection.AddSingleton(Substitute.For<ILogger<MultiProcessorJobHandler>>());
         collection.AddTransient<IModuleHelper, ModuleHelper>();
-        collection.AddSingleton<FastjobOptions>(new FastjobOptions
+        collection.AddSingleton(new FastjobOptions
         {
             TransientFaultMaxTries = 1,
         });
-        collection.AddLogging();
+        collection.AddLogging(builder =>
+        {
+            builder.AddXUnit(outputHelper);
+            builder.SetMinimumLevel(LogLevel.Trace);
+        });
         collection = Configure(collection);
 
         Provider = collection.BuildServiceProvider();
@@ -55,6 +57,7 @@ public abstract class IntegrationTest : IDisposable
         Service = Provider.GetRequiredService<IAsyncService>();
         Repository = Provider.GetRequiredService<IJobRepository>();
         Archive = Provider.GetRequiredService<IJobArchive>();
+        Options = Provider.GetRequiredService<FastjobOptions>();
     }
 
     protected IServiceProvider Provider { get; private set; }
@@ -65,6 +68,7 @@ public abstract class IntegrationTest : IDisposable
     protected ILogger Logger { get; private set; }
     protected IJobRepository Repository { get; private set; }
     protected IJobArchive Archive { get; private set; }
+    protected FastjobOptions Options { get; private set; }
 
     public void Dispose()
     {
@@ -98,13 +102,13 @@ public abstract class IntegrationTest : IDisposable
         return ids;
     }
 
-    protected async Task<IEnumerable<string>> ScheduleJobs(int amount)
+    protected async Task<IEnumerable<string>> ScheduleJobs(int amount, int seconds = 0)
     {
         var ids = new List<string>();
         foreach (var i in Enumerable.Range(0, amount))
         {
             var id = JobId.New;
-            await Repository.AddJobAsync(AsyncService.Descriptor(id), id, DateTimeOffset.Now);
+            await Repository.AddJobAsync(AsyncService.Descriptor(id), id, DateTimeOffset.Now.AddSeconds(seconds));
 
             ids.Add(id);
         }
@@ -112,7 +116,7 @@ public abstract class IntegrationTest : IDisposable
         return ids;
     }
 
-    public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 2000) =>
+    public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 4000) =>
         await WaitForCompletionAsync(new List<string> {jobId}, maxWaitTime);
 
     public async Task WaitForCompletionAsync(List<string> ids, int maxWaitTime = 2000)

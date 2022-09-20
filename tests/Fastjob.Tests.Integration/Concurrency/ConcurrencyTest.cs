@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Fastjob.Core;
 using Fastjob.Core.Archive;
 using Fastjob.Core.JobHandler;
 using Fastjob.Core.Persistence;
@@ -26,6 +27,10 @@ public abstract class ConcurrencyTest : IntegrationTest
     {
         collection.AddSingleton<IJobPersistence, MemoryPersistence>();
         collection.AddSingleton<IJobArchive, MemoryArchive>();
+        collection.AddSingleton<FastjobOptions>(new FastjobOptions
+        {
+            MaxOverdueTimeout = 5
+        });
         return base.Configure(collection);
     }
 

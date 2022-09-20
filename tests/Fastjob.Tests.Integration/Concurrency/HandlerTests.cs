@@ -24,7 +24,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         var id = (await PublishLongRunningJobs(1)).First();
-        await WaitForCompletionAsync(id, 3000);
+        await WaitForCompletionAsync(id);
 
         //Assert
         CallReceiver.WasCalledXTimes(id).Should().BeTrue();
@@ -41,7 +41,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         var ids = (await PublishLongRunningJobs(2));
-        await WaitForCompletionAsync(ids, 3000);
+        await WaitForCompletionAsync(ids, 5000);
 
         //Assert
         CallReceiver.WasCalledXTimes(ids[0]).Should().BeTrue();
@@ -59,6 +59,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         var id1 = await PublishLongRunningJobs(1);
+        await Task.Delay(100);
         var id = (await PublishJobs(1)).First();
         await WaitForCompletionAsync(id);
 
@@ -98,6 +99,44 @@ public class HandlerTests : ConcurrencyTest
         //Assert
         archived.Value.Should().Contain(job => job.HandlerId == FirstJobHandler.HandlerId);
         archived.Value.Should().Contain(job => job.HandlerId == SecondJobHandler.HandlerId);
+        cts.Cancel();
+    }
+
+    [Fact]
+    public async Task HandlerCanCompleteInstantJobThatNeverGotExecuted()
+    {
+        //Arrange
+        var cts = new CancellationTokenSource();
+        var faultyHandler = new FaultyJobHandler(Repository, Options);
+        StartJobHandler(faultyHandler, cts.Token);
+        var id = (await PublishJobs(1)).First();
+        await Task.Delay(100);
+
+        //Act
+        StartJobHandler(FirstJobHandler, cts.Token);
+        await WaitForCompletionAsync(id, 10000);
+
+        //Assert
+        CallReceiver.WasCalledXTimes(id).Should().BeTrue();
+        cts.Cancel();
+    }
+
+    [Fact]
+    public async Task HandlerCanCompleteScheduledJobThatNeverGotExecuted()
+    {
+        //Arrange
+        var cts = new CancellationTokenSource();
+        var faultyHandler = new FaultyJobHandler(Repository, Options);
+        StartJobHandler(faultyHandler, cts.Token);
+        var id = (await ScheduleJobs(1, 1)).First();
+        await Task.Delay(100);
+
+        //Act
+        StartJobHandler(FirstJobHandler, cts.Token);
+        await WaitForCompletionAsync(id, 5000);
+
+        //Assert
+        CallReceiver.WasCalledXTimes(id).Should().BeTrue();
         cts.Cancel();
     }
 }

@@ -25,7 +25,7 @@ public class AsyncService : IAsyncService
 
     public async Task DoLongRunningAsync(string id)
     {
-        await Task.Delay(2000);
+        await Task.Delay(1000);
         CallReceiver.AddCall(id);
     }
 

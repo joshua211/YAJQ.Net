@@ -53,18 +53,21 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         while (!cancellationToken.IsCancellationRequested)
         {
             var nextJob = await WaitForNextJobIdAsync(cancellationToken);
-            logger.LogTrace("Found open job: {Id}", nextJob);
+            LogTrace("Found open job: {Id}", nextJob);
 
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (!result.WasSuccess)
             {
-                logger.LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
+                //logger.LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
+                LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
                 continue;
             }
 
+            LogTrace("Claimed Job with Id {Id}", result.Value.Id);
+
             if (result.Value.JobType == JobType.Scheduled)
             {
-                logger.LogTrace("Scheduled job, adding to backlog");
+                LogTrace("Scheduled job, adding to backlog");
                 scheduledJobs.Add(result.Value);
                 continue;
             }
@@ -84,12 +87,12 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             var nextPersistedJob = await repository.GetNextJobAsync();
             if (!nextPersistedJob.WasSuccess)
             {
-                logger.LogTrace("No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
+                LogTrace("No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
 
                 await Task.Delay(options.HandlerTimeout, source.Token).ContinueWith(t =>
                 {
                     if (t.IsCanceled)
-                        logger.LogTrace("Waking up from waiting");
+                        LogTrace("Waking up from waiting");
                 }, cancellationToken);
 
                 continue;
@@ -107,10 +110,13 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyToken) ||
-                    nextPersistedJob.Value.State != JobState.Pending)
+                if (nextPersistedJob.Value.State != JobState.Pending ||
+                    !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyToken) &&
+                    !IsUpdateOverdue(nextPersistedJob.Value))
                     //Another handler is already handling this job or it was already handled
                     continue;
+
+                //TODO handle instant job that is already handled but processing takes longer than MaxOverdueTimeout
             }
 
             nextJob = nextPersistedJob.Value.Id;
@@ -170,13 +176,19 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
                 {
                     var result = await repository.RefreshTokenAsync(job.Id, HandlerId);
                     if (!result.WasSuccess)
-                        logger.LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
+                        LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
                 }
             }
 
             await Task.Delay(options.ScheduledJobTimerInterval, token).ContinueWith(_ => { });
         }
     }
+
+    private void LogTrace(string message, params object[] args) =>
+        logger.LogTrace($"[{HandlerId}]: " + message, args);
+
+    private void LogWarning(string message, params object[] args) =>
+        logger.LogWarning($"[{HandlerId}]: " + message, args);
 
     private bool IsHandlerResponsibleForJob(PersistedJob job) =>
         job.ConcurrencyToken == HandlerId;
