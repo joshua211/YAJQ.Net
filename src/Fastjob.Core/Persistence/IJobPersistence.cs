@@ -1,14 +1,12 @@
-﻿using Fastjob.Core.Common;
-
-namespace Fastjob.Core.Persistence;
+﻿namespace Fastjob.Core.Persistence;
 
 public interface IJobPersistence
 {
     public event EventHandler<string>? NewJob;
     Task<ExecutionResult<Success>> SaveJobAsync(PersistedJob persistedJob);
     Task<ExecutionResult<PersistedJob>> GetJobAsync(string id);
-    Task<ExecutionResult<Success>> UpdateStateAsync(PersistedJob persistedJob, JobState expectedState);
-    Task<ExecutionResult<Success>> UpdateTokenAsync(PersistedJob persistedJob, string expectedToken);
+    Task<ExecutionResult<PersistedJob>> UpdateStateAsync(PersistedJob persistedJob, JobState expectedState);
+    Task<ExecutionResult<PersistedJob>> UpdateTokenAsync(PersistedJob persistedJob, string expectedToken);
     Task<ExecutionResult<Success>> RemoveJobAsync(string jobId);
     Task<ExecutionResult<Success>> RemoveAllJobsAsync();
     Task<ExecutionResult<Success>> ArchiveJobAsync(ArchivedJob job);

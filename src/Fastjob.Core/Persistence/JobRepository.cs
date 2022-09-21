@@ -1,7 +1,4 @@
-﻿using Fastjob.Core.Common;
-using Fastjob.Core.Interfaces;
-
-namespace Fastjob.Core.Persistence;
+﻿namespace Fastjob.Core.Persistence;
 
 public class JobRepository : IJobRepository
 {
@@ -44,18 +41,14 @@ public class JobRepository : IJobRepository
         return job.Match<ExecutionResult<PersistedJob>>(job => job, err => err);
     }
 
-    public async Task<ExecutionResult<PersistedJob>> TryGetAndMarkJobAsync(string jobId, string concurrencyMark)
+    public async Task<ExecutionResult<PersistedJob>> TryGetAndMarkJobAsync(PersistedJob job, string concurrencyMark)
     {
-        var job = await GetJobAsync(jobId);
-        if (!job.WasSuccess)
-            return job.Error;
+        var oldToken = job.ConcurrencyToken;
+        job.SetToken(concurrencyMark);
 
-        var oldToken = job.Value.ConcurrencyToken;
-        job.Value.SetToken(concurrencyMark);
+        var updateResult = await persistence.UpdateTokenAsync(job, oldToken);
 
-        var updateResult = await persistence.UpdateTokenAsync(job.Value, oldToken);
-
-        return updateResult.Match<ExecutionResult<PersistedJob>>(success => job.Value, error => error.Code switch
+        return updateResult.Match<ExecutionResult<PersistedJob>>(modified => modified, error => error.Code switch
         {
             //OutdatedUpdate means it was already marked
             11 => Error.AlreadyMarked(),
@@ -74,7 +67,7 @@ public class JobRepository : IJobRepository
 
         var update = await persistence.UpdateTokenAsync(job.Value, job.Value.ConcurrencyToken);
 
-        return !update.WasSuccess ? update.Error : ExecutionResult<Success>.Success;
+        return update.Match<ExecutionResult<Success>>(persistedJob => new Success(), error => error);
     }
 
     public async Task<ExecutionResult<Success>> CompleteJobAsync(string jobId, string handlerId, string processorId,

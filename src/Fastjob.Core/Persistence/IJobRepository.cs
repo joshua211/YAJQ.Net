@@ -1,7 +1,4 @@
-﻿using Fastjob.Core.Common;
-using Fastjob.Core.Interfaces;
-
-namespace Fastjob.Core.Persistence;
+﻿namespace Fastjob.Core.Persistence;
 
 public interface IJobRepository
 {
@@ -12,7 +9,7 @@ public interface IJobRepository
 
     Task<ExecutionResult<PersistedJob>> GetNextJobAsync();
     Task<ExecutionResult<PersistedJob>> GetJobAsync(string id);
-    Task<ExecutionResult<PersistedJob>> TryGetAndMarkJobAsync(string jobId, string concurrencyMark);
+    Task<ExecutionResult<PersistedJob>> TryGetAndMarkJobAsync(PersistedJob job, string concurrencyMark);
 
     Task<ExecutionResult<Success>> CompleteJobAsync(string jobId, string handlerId, string processorId,
         TimeSpan executionTime, Error? lastError = null, Exception? lastException = null, bool wasSuccess = true);

@@ -1,9 +1,4 @@
-﻿using System.Collections.Immutable;
-using Fastjob.Core.Archive;
-using Fastjob.Core.Common;
-using Fastjob.Core.Persistence;
-
-namespace Fastjob.Persistence.Memory;
+﻿namespace Fastjob.Persistence.Memory;
 
 public class MemoryPersistence : IJobPersistence
 {
@@ -47,8 +42,9 @@ public class MemoryPersistence : IJobPersistence
         return job is null ? Error.NotFound() : job.DeepCopy();
     }
 
-    public async Task<ExecutionResult<Success>> UpdateStateAsync(PersistedJob persistedJob, JobState expectedState)
+    public async Task<ExecutionResult<PersistedJob>> UpdateStateAsync(PersistedJob persistedJob, JobState expectedState)
     {
+        PersistedJob modifiedJob;
         lock (jobLock)
         {
             var index = jobs.FindIndex(j => Equals(j.Id, persistedJob.Id));
@@ -60,16 +56,18 @@ public class MemoryPersistence : IJobPersistence
             if (currentTrackedJob.State != expectedState)
                 return Error.OutdatedUpdate();
 
-            persistedJob.Refresh();
-            list[index] = persistedJob;
+            modifiedJob = persistedJob.DeepCopy();
+            modifiedJob.Refresh();
+            list[index] = modifiedJob;
             jobs = list.ToImmutableList();
         }
 
-        return ExecutionResult<Success>.Success;
+        return modifiedJob;
     }
 
-    public async Task<ExecutionResult<Success>> UpdateTokenAsync(PersistedJob persistedJob, string expectedToken)
+    public async Task<ExecutionResult<PersistedJob>> UpdateTokenAsync(PersistedJob persistedJob, string expectedToken)
     {
+        PersistedJob modifiedJob;
         lock (jobLock)
         {
             var index = jobs.FindIndex(j => Equals(j.Id, persistedJob.Id));
@@ -81,12 +79,13 @@ public class MemoryPersistence : IJobPersistence
             if (currentTrackedJob.ConcurrencyToken != expectedToken)
                 return Error.OutdatedUpdate();
 
-            persistedJob.Refresh();
-            list[index] = persistedJob;
+            modifiedJob = persistedJob.DeepCopy();
+            modifiedJob.Refresh();
+            list[index] = modifiedJob;
             jobs = list.ToImmutableList();
         }
 
-        return ExecutionResult<Success>.Success;
+        return modifiedJob;
     }
 
     public async Task<ExecutionResult<Success>> RemoveJobAsync(string jobId)

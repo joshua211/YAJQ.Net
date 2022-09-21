@@ -1,9 +1,4 @@
-﻿using Fastjob.Core.JobProcessor;
-using Fastjob.Core.Persistence;
-using Fastjob.Core.Utils;
-using Microsoft.Extensions.Logging;
-
-namespace Fastjob.Core.JobHandler;
+﻿namespace Fastjob.Core.JobHandler;
 
 public class MultiProcessorJobHandler : IJobHandler, IDisposable
 {
@@ -48,12 +43,13 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
 
     public async Task Start(CancellationToken cancellationToken)
     {
+        //TODO create sub handler for scheduled jobs
         Task.Run(() => HandleScheduledJobs(cancellationToken), cancellationToken).ContinueWith(_ => { });
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var nextJob = await WaitForNextJobIdAsync(cancellationToken);
-            LogTrace("Found open job: {Id}", nextJob);
+            var nextJob = await WaitForNextJobAsync(cancellationToken);
+            LogTrace("Found open job: {Id}", nextJob.Id);
 
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (!result.WasSuccess)
@@ -78,10 +74,10 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         }
     }
 
-    private async Task<string> WaitForNextJobIdAsync(CancellationToken cancellationToken)
+    private async Task<PersistedJob> WaitForNextJobAsync(CancellationToken cancellationToken)
     {
         //TODO check last job id == current job id
-        string? nextJob = null;
+        PersistedJob? nextJob = null;
         while (nextJob is null)
         {
             var nextPersistedJob = await repository.GetNextJobAsync();
@@ -119,7 +115,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
                 //TODO handle instant job that is already handled but processing takes longer than MaxOverdueTimeout
             }
 
-            nextJob = nextPersistedJob.Value.Id;
+            nextJob = nextPersistedJob.Value;
         }
 
         return nextJob;

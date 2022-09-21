@@ -1,13 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Fastjob.Core.Common;
-using Fastjob.Core.Persistence;
-using Fastjob.Tests.Shared;
-using FluentAssertions;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace Fastjob.Tests.Integration.Persistence;
+﻿namespace Fastjob.Tests.Integration.Persistence;
 
 public abstract class PersistenceTests : IntegrationTest
 {
@@ -50,9 +41,10 @@ public abstract class PersistenceTests : IntegrationTest
         //Arrange
         var jobId = JobId.New;
         await Repository.AddJobAsync(AsyncService.Descriptor(), jobId);
+        var get = await Repository.GetJobAsync(jobId);
 
         //Act
-        var result = await Repository.TryGetAndMarkJobAsync(jobId, "XXX");
+        var result = await Repository.TryGetAndMarkJobAsync(get.Value, "XXX");
 
         //Assert
         result.WasSuccess.Should().BeTrue();

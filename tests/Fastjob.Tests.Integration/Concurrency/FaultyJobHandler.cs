@@ -1,11 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Fastjob.Core;
-using Fastjob.Core.JobHandler;
-using Fastjob.Core.Persistence;
-
-namespace Fastjob.Tests.Integration.Concurrency;
+﻿namespace Fastjob.Tests.Integration.Concurrency;
 
 public class FaultyJobHandler : IJobHandler
 {
@@ -24,7 +17,7 @@ public class FaultyJobHandler : IJobHandler
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var nextJob = await WaitForNextJobIdAsync(cancellationToken);
+            var nextJob = await WaitForNextJobAsync(cancellationToken);
 
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (result.WasSuccess)
@@ -32,9 +25,9 @@ public class FaultyJobHandler : IJobHandler
         }
     }
 
-    private async Task<string> WaitForNextJobIdAsync(CancellationToken cancellationToken)
+    private async Task<PersistedJob> WaitForNextJobAsync(CancellationToken cancellationToken)
     {
-        string? nextJob = null;
+        PersistedJob? nextJob = null;
         while (nextJob is null)
         {
             var nextPersistedJob = await repository.GetNextJobAsync();
@@ -63,7 +56,7 @@ public class FaultyJobHandler : IJobHandler
                     continue;
             }
 
-            nextJob = nextPersistedJob.Value.Id;
+            nextJob = nextPersistedJob.Value;
         }
 
         return nextJob;
