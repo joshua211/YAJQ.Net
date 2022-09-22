@@ -17,6 +17,7 @@
     <RepositoryUrl>
       https://github.com/joshua211/YAJQ.Net
     </RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
