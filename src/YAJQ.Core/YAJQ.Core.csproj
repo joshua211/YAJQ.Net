@@ -4,6 +4,19 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>YAJQ.Core</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Joshua Hillmann</Authors>
+    <PackageTags>Background;Worker;Scheduled;Job;Task;Delayed;Queue;Scheduler;Hosted;Asp;</PackageTags>
+    <Description>
+      Core package of YAJQ.
+    </Description>
+    <PackageProjectUrl>
+      https://github.com/joshua211/YAJQ.Net
+    </PackageProjectUrl>
+    <RepositoryUrl>
+      https://github.com/joshua211/YAJQ.Net
+    </RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
