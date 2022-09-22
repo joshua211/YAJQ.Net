@@ -1,5 +1,8 @@
-﻿namespace YAJQ.Core.Interfaces;
+﻿namespace YAJQ.Core.JobQueue.Interfaces;
 
+/// <summary>
+/// Model Class that holds all required data to execute a job
+/// </summary>
 public interface IJobDescriptor
 {
     string JobName { get; }

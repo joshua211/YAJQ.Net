@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using YAJQ.Core.JobProcessor;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
+using YAJQ.Core.JobProcessor;
 
 namespace YAJQ.Tests.Unit.JobProcessor;
 

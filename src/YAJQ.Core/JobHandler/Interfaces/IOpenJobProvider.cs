@@ -1,6 +1,6 @@
 ﻿using YAJQ.Core.Persistence;
 
-namespace YAJQ.Core.JobHandler;
+namespace YAJQ.Core.JobHandler.Interfaces;
 
 public interface IOpenJobProvider
 {

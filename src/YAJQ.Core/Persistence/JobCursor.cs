@@ -11,7 +11,7 @@ public class JobCursor
     public int CurrentCursor { get; private set; }
     public int MaxCursor { get; private set; }
 
-    public static JobCursor Empty => new JobCursor(0, 0);
+    public static JobCursor Empty => new(0, 0);
 
     public JobCursor Increase()
     {
@@ -33,7 +33,7 @@ public class JobCursor
     public JobCursor DecreaseMax()
     {
         if (MaxCursor == 1)
-            return JobCursor.Empty;
+            return Empty;
 
         return CurrentCursor == MaxCursor
             ? new JobCursor(--CurrentCursor, --MaxCursor)

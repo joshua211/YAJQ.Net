@@ -1,9 +1,11 @@
 ﻿namespace YAJQ.Core.Persistence;
 
+/// <summary>
+/// Strongly typed Id to identify <see cref="PersistedJob">Persisted Jobs</see>.
+/// Defaults to a random <see cref="Guid"/>.
+/// </summary>
 public class JobId
 {
-    public string Value { get; private set; }
-
     private JobId(string id)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -12,10 +14,19 @@ public class JobId
         Value = id;
     }
 
-    public static JobId New => new JobId(Guid.NewGuid().ToString());
-    public static JobId With(string id) => new JobId(id);
+    public string Value { get; }
 
-    public static implicit operator string(JobId id) => id.Value;
+    public static JobId New => new(Guid.NewGuid().ToString());
+
+    public static JobId With(string id)
+    {
+        return new(id);
+    }
+
+    public static implicit operator string(JobId id)
+    {
+        return id.Value;
+    }
 
     public override bool Equals(object? obj)
     {
@@ -23,6 +34,11 @@ public class JobId
             return false;
 
         return id.Value == Value;
+    }
+    
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
     }
 
     public override string ToString()

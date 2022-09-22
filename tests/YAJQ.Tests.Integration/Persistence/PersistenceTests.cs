@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using YAJQ.Core.Common;
-using YAJQ.Core.Persistence;
-using YAJQ.Tests.Shared;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
+using YAJQ.Core.Common;
+using YAJQ.Core.Persistence;
+using YAJQ.Tests.Shared;
 
 namespace YAJQ.Tests.Integration.Persistence;
 

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Xunit;
 using YAJQ.Core;
 using YAJQ.Core.Common;
 using YAJQ.Core.JobHandler;
 using YAJQ.Core.Persistence;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Xunit;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Tests.Unit.JobHandler;
 
@@ -37,7 +38,7 @@ public class HandlerTests : TestBase
         await Task.Delay(300);
         repository.Update +=
             Raise.Event<EventHandler<JobEvent>>(new object(),
-                new JobEvent(Core.Persistence.JobId.New, JobState.Pending));
+                new JobEvent(JobId.New, JobState.Pending));
         await Task.Delay(300);
 
         //Assert

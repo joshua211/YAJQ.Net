@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using YAJQ.Core;
-using YAJQ.Core.Archive;
-using YAJQ.Core.JobHandler;
-using YAJQ.Core.JobProcessor;
-using YAJQ.Core.JobQueue;
-using YAJQ.Core.Persistence;
-using YAJQ.Core.Utils;
-using YAJQ.Tests.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
+using YAJQ.Core;
+using YAJQ.Core.Archive.Interfaces;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
+using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.Core.Utils;
+using YAJQ.Tests.Shared;
 
 namespace YAJQ.Tests.Integration;
 
@@ -43,7 +47,7 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IScheduledJobSubHandler, ScheduledJobSubHandler>();
         collection.AddSingleton(new YAJQOptions
         {
-            TransientFaultMaxTries = 1,
+            TransientFaultMaxTries = 1
         });
         collection.AddLogging(builder =>
         {
@@ -62,15 +66,15 @@ public abstract class IntegrationTest : IDisposable
         Options = Provider.GetRequiredService<YAJQOptions>();
     }
 
-    protected IServiceProvider Provider { get; private set; }
-    protected IJobHandler Handler { get; private set; }
-    protected IJobQueue JobQueue { get; private set; }
-    protected IAsyncService Service { get; private set; }
-    protected IJobPersistence Persistence { get; private set; }
+    protected IServiceProvider Provider { get; }
+    protected IJobHandler Handler { get; }
+    protected IJobQueue JobQueue { get; }
+    protected IAsyncService Service { get; }
+    protected IJobPersistence Persistence { get; }
     protected ILogger Logger { get; private set; }
-    protected IJobRepository Repository { get; private set; }
-    protected IJobArchive Archive { get; private set; }
-    protected YAJQOptions Options { get; private set; }
+    protected IJobRepository Repository { get; }
+    protected IJobArchive Archive { get; }
+    protected YAJQOptions Options { get; }
 
     public void Dispose()
     {
@@ -118,8 +122,10 @@ public abstract class IntegrationTest : IDisposable
         return ids;
     }
 
-    public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 4000) =>
+    public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 4000)
+    {
         await WaitForCompletionAsync(new List<string> {jobId}, maxWaitTime);
+    }
 
     public async Task WaitForCompletionAsync(List<string> ids, int maxWaitTime = 2000)
     {
@@ -130,7 +136,7 @@ public abstract class IntegrationTest : IDisposable
             await Task.Delay(100);
             tries++;
             completedIds = (await Archive.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
-            if ((tries * 100) % maxWaitTime == 0)
+            if (tries * 100 % maxWaitTime == 0)
             {
                 testLogger.Log("TIMEOUT");
                 break;

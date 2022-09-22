@@ -1,14 +1,18 @@
-﻿using YAJQ.Core;
-using YAJQ.Core.Archive;
-using YAJQ.Core.JobHandler;
-using YAJQ.Core.JobProcessor;
-using YAJQ.Core.JobQueue;
-using YAJQ.Core.Persistence;
-using YAJQ.Core.Utils;
-using YAJQ.Persistence.Memory;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using YAJQ.Core;
+using YAJQ.Core.Archive.Interfaces;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
+using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.Core.Utils;
+using YAJQ.Persistence.Memory;
 
 namespace YAJQ.DependencyInjection;
 
@@ -25,7 +29,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddYAJQ(this IServiceCollection services, Action<YAJQOptions> configure)
     {
         RegisterServices(services);
-        services.Configure<YAJQOptions>(configure);
+        services.Configure(configure);
 
         return services;
     }
@@ -52,7 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IScheduledJobSubHandler, ScheduledJobSubHandler>();
         services.AddSingleton<IJobPersistence, MemoryPersistence>();
         services.AddSingleton<IJobArchive, MemoryArchive>();
-        services.AddTransient<YAJQOptions>(provider =>
+        services.AddTransient(provider =>
             provider.GetRequiredService<IOptions<YAJQOptions>>().Value);
 
         return services;

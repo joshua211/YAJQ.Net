@@ -1,7 +1,9 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using YAJQ.Core.Common;
+using YAJQ.Core.JobQueue.Interfaces;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Core.JobQueue;
 
@@ -85,10 +87,7 @@ public class JobQueue : IJobQueue
         var methodParams = method.GetParameters();
         var argTypes = new Type[methodParams.Length];
 
-        for (var i = 0; i < methodParams.Length; ++i)
-        {
-            argTypes[i] = methodParams[i].ParameterType;
-        }
+        for (var i = 0; i < methodParams.Length; ++i) argTypes[i] = methodParams[i].ParameterType;
 
         var jobName = method.Name;
         var typeName = method.DeclaringType!.FullName;

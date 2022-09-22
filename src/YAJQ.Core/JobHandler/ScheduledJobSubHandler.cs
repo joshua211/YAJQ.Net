@@ -1,21 +1,24 @@
 ﻿using Microsoft.Extensions.Logging;
+using YAJQ.Core.JobHandler.Interfaces;
 using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Core.JobHandler;
 
 public class ScheduledJobSubHandler : IScheduledJobSubHandler
 {
-    private readonly YAJQOptions options;
-    private readonly List<PersistedJob> scheduledJobs;
-    private readonly IJobRepository repository;
     private readonly ILogger<IScheduledJobSubHandler> logger;
+    private readonly YAJQOptions options;
+    private readonly IJobRepository repository;
+    private readonly List<PersistedJob> scheduledJobs;
 
     public ScheduledJobSubHandler(YAJQOptions options, IJobRepository repository,
         ILogger<IScheduledJobSubHandler> logger)
     {
         this.options = options;
-        this.scheduledJobs = new List<PersistedJob>();
+        scheduledJobs = new List<PersistedJob>();
         this.repository = repository;
         this.logger = logger;
     }
@@ -28,6 +31,12 @@ public class ScheduledJobSubHandler : IScheduledJobSubHandler
             .ContinueWith(_ => { });
     }
 
+
+    public void AddScheduledJob(PersistedJob job)
+    {
+        scheduledJobs.Add(job);
+    }
+
     private async Task HandleAsync(string handlerId, IProcessorSelectionStrategy selectionStrategy,
         Func<PersistedJob, IJobProcessor, CancellationToken, Task> processJob,
         CancellationToken cancellationToken)
@@ -35,7 +44,6 @@ public class ScheduledJobSubHandler : IScheduledJobSubHandler
         while (!cancellationToken.IsCancellationRequested)
         {
             foreach (var job in scheduledJobs.ToList())
-            {
                 if (job.ScheduledTime < DateTimeOffset.Now)
                 {
                     var processor = await selectionStrategy.GetNextProcessorAsync();
@@ -49,18 +57,13 @@ public class ScheduledJobSubHandler : IScheduledJobSubHandler
                     if (!result.WasSuccess)
                         LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
                 }
-            }
 
             await Task.Delay(options.ScheduledJobTimerInterval, cancellationToken);
         }
     }
 
-
-    public void AddScheduledJob(PersistedJob job)
+    private void LogWarning(string handlerId, string message, params object[] args)
     {
-        scheduledJobs.Add(job);
-    }
-
-    private void LogWarning(string handlerId, string message, params object[] args) =>
         logger.LogWarning($"[{handlerId}]: " + message, args);
+    }
 }

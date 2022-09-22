@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\YAJQ.Core\YAJQ.Core.csproj" />
+        <ProjectReference Include="..\YAJQ.Core\YAJQ.Core.csproj"/>
     </ItemGroup>
 
 </Project>

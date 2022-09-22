@@ -1,13 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
+using YAJQ.Core.JobHandler.Interfaces;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Core.JobHandler;
 
 public class OpenJobProvider : IOpenJobProvider
 {
-    private readonly IJobRepository repository;
     private readonly ILogger<OpenJobProvider> logger;
     private readonly YAJQOptions options;
+    private readonly IJobRepository repository;
 
     public OpenJobProvider(IJobRepository repository, ILogger<OpenJobProvider> logger, YAJQOptions options)
     {
@@ -64,12 +66,18 @@ public class OpenJobProvider : IOpenJobProvider
         return nextJob;
     }
 
-    private bool IsHandlerResponsibleForJob(string handlerId, PersistedJob job) =>
-        job.ConcurrencyToken == handlerId;
+    private bool IsHandlerResponsibleForJob(string handlerId, PersistedJob job)
+    {
+        return job.ConcurrencyToken == handlerId;
+    }
 
-    private bool IsUpdateOverdue(PersistedJob job) =>
-        DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    private bool IsUpdateOverdue(PersistedJob job)
+    {
+        return DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    }
 
-    private void LogTrace(string handlerId, string message, params object[] args) =>
+    private void LogTrace(string handlerId, string message, params object[] args)
+    {
         logger.LogTrace($"[{handlerId}]: " + message, args);
+    }
 }

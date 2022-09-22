@@ -1,4 +1,5 @@
-﻿using YAJQ.Core.Interfaces;
+﻿using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
 
 namespace YAJQ.Core.Persistence;
 
@@ -17,18 +18,24 @@ public class PersistedJob
         JobType = jobType;
     }
 
-    public JobId Id { get; private set; }
-    public IJobDescriptor Descriptor { get; private set; }
-    public DateTimeOffset CreationTime { get; private set; }
-    public DateTimeOffset ScheduledTime { get; private set; }
+    public JobId Id { get; }
+    public IJobDescriptor Descriptor { get; }
+    public DateTimeOffset CreationTime { get; }
+    public DateTimeOffset ScheduledTime { get; }
     public DateTimeOffset LastUpdated { get; private set; }
     public string ConcurrencyToken { get; private set; }
     public JobState State { get; private set; }
-    public JobType JobType { get; private set; }
+    public JobType JobType { get; }
 
-    public void Refresh() => LastUpdated = DateTimeOffset.Now;
+    public void Refresh()
+    {
+        LastUpdated = DateTimeOffset.Now;
+    }
 
-    public void SetToken(string tag) => ConcurrencyToken = tag;
+    public void SetToken(string tag)
+    {
+        ConcurrencyToken = tag;
+    }
 
     public void Complete()
     {
@@ -52,12 +59,18 @@ public class PersistedJob
             DateTimeOffset.Now, handlerId, processorId, executionTime, DateTimeOffset.Now - CreationTime, State);
     }
 
-    public static PersistedJob Asap(JobId id, IJobDescriptor descriptor) => new PersistedJob(id, descriptor,
-        DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, string.Empty, JobState.Pending, JobType.Instant);
+    public static PersistedJob Asap(JobId id, IJobDescriptor descriptor)
+    {
+        return new(id, descriptor,
+            DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, string.Empty, JobState.Pending,
+            JobType.Instant);
+    }
 
-    public static PersistedJob Scheduled(JobId id, IJobDescriptor descriptor, DateTimeOffset scheduledTime) =>
-        new PersistedJob(id, descriptor, DateTimeOffset.Now, scheduledTime, DateTimeOffset.Now, string.Empty,
+    public static PersistedJob Scheduled(JobId id, IJobDescriptor descriptor, DateTimeOffset scheduledTime)
+    {
+        return new(id, descriptor, DateTimeOffset.Now, scheduledTime, DateTimeOffset.Now, string.Empty,
             JobState.Pending, JobType.Scheduled);
+    }
 
     public override bool Equals(object? obj)
     {
@@ -68,7 +81,15 @@ public class PersistedJob
                job.LastUpdated == LastUpdated && job.CreationTime == CreationTime && job.ScheduledTime == ScheduledTime;
     }
 
-    public PersistedJob DeepCopy() =>
-        new(Id, Descriptor, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, State,
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Id, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, (int) State,
+            (int) JobType);
+    }
+
+    public PersistedJob DeepCopy()
+    {
+        return new(Id, Descriptor, CreationTime, ScheduledTime, LastUpdated, ConcurrencyToken, State,
             JobType);
+    }
 }

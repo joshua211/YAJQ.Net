@@ -1,5 +1,7 @@
 ﻿using YAJQ.Core.Common;
-using YAJQ.Core.Interfaces;
+using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Core.Persistence;
 
@@ -13,7 +15,7 @@ public class JobRepository : IJobRepository
         persistence.NewJob += OnNewJob;
     }
 
-    public event EventHandler<JobEvent> Update;
+    public event EventHandler<JobEvent>? Update;
 
     public async Task<ExecutionResult<string>> AddJobAsync(IJobDescriptor descriptor, string? id = null,
         DateTimeOffset? scheduledTime = null)
@@ -40,8 +42,8 @@ public class JobRepository : IJobRepository
 
     public async Task<ExecutionResult<PersistedJob>> GetJobAsync(string id)
     {
-        var job = await persistence.GetJobAsync(id);
-        return job.Match<ExecutionResult<PersistedJob>>(job => job, err => err);
+        var get = await persistence.GetJobAsync(id);
+        return get.Match<ExecutionResult<PersistedJob>>(job => job, err => err);
     }
 
     public async Task<ExecutionResult<PersistedJob>> TryGetAndMarkJobAsync(PersistedJob job, string concurrencyMark)
@@ -70,7 +72,7 @@ public class JobRepository : IJobRepository
 
         var update = await persistence.UpdateTokenAsync(job.Value, job.Value.ConcurrencyToken);
 
-        return update.Match<ExecutionResult<Success>>(persistedJob => new Success(), error => error);
+        return update.Match<ExecutionResult<Success>>(_ => new Success(), error => error);
     }
 
     public async Task<ExecutionResult<Success>> CompleteJobAsync(string jobId, string handlerId, string processorId,

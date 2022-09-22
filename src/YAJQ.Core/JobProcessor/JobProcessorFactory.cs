@@ -1,6 +1,7 @@
-﻿using YAJQ.Core.Utils;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using YAJQ.Core.JobProcessor.Interfaces;
+using YAJQ.Core.Utils;
 
 namespace YAJQ.Core.JobProcessor;
 

@@ -1,18 +1,21 @@
-﻿using YAJQ.Core.JobProcessor;
+﻿using Microsoft.Extensions.Logging;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 using YAJQ.Core.Utils;
-using Microsoft.Extensions.Logging;
 
 namespace YAJQ.Core.JobHandler;
 
 public class MultiProcessorJobHandler : IJobHandler, IDisposable
 {
     private readonly ILogger<MultiProcessorJobHandler> logger;
+    private readonly IOpenJobProvider openJobProvider;
     private readonly YAJQOptions options;
     private readonly IJobProcessorFactory processorFactory;
     private readonly IJobRepository repository;
     private readonly IProcessorSelectionStrategy selectionStrategy;
-    private readonly IOpenJobProvider openJobProvider;
     private readonly IScheduledJobSubHandler subHandler;
     private CancellationTokenSource source;
 
@@ -34,16 +37,17 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         HandlerId = $"{Environment.MachineName}:{Guid.NewGuid().ToString().Split("-").First()}";
 
         foreach (var _ in Enumerable.Range(0, options.NumberOfProcessors))
-        {
             selectionStrategy.AddProcessor(processorFactory.New());
-        }
 
         repository.Update += OnJobUpdate;
     }
 
-    public void Dispose() => source.Dispose();
+    public void Dispose()
+    {
+        source.Dispose();
+    }
 
-    public string HandlerId { get; private set; }
+    public string HandlerId { get; }
 
     public async Task Start(CancellationToken cancellationToken)
     {
@@ -109,15 +113,23 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         source = new CancellationTokenSource();
     }
 
-    private void LogTrace(string message, params object[] args) =>
+    private void LogTrace(string message, params object[] args)
+    {
         logger.LogTrace($"[{HandlerId}]: " + message, args);
+    }
 
-    private void LogWarning(string message, params object[] args) =>
+    private void LogWarning(string message, params object[] args)
+    {
         logger.LogWarning($"[{HandlerId}]: " + message, args);
+    }
 
-    private bool IsHandlerResponsibleForJob(PersistedJob job) =>
-        job.ConcurrencyToken == HandlerId;
+    private bool IsHandlerResponsibleForJob(PersistedJob job)
+    {
+        return job.ConcurrencyToken == HandlerId;
+    }
 
-    private bool IsUpdateOverdue(PersistedJob job) =>
-        DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    private bool IsUpdateOverdue(PersistedJob job)
+    {
+        return DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    }
 }

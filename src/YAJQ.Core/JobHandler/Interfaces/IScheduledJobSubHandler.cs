@@ -1,7 +1,7 @@
-﻿using YAJQ.Core.JobProcessor;
+﻿using YAJQ.Core.JobProcessor.Interfaces;
 using YAJQ.Core.Persistence;
 
-namespace YAJQ.Core.JobHandler;
+namespace YAJQ.Core.JobHandler.Interfaces;
 
 public interface IScheduledJobSubHandler
 {

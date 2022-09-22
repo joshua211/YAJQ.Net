@@ -1,10 +1,13 @@
-﻿using YAJQ.Core.JobHandler;
-using YAJQ.Core.JobQueue;
-using YAJQ.Core.Persistence;
-using YAJQ.DependencyInjection;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.DependencyInjection;
 
 namespace YAJQ.Tests.Unit.DependencyInjection;
 
