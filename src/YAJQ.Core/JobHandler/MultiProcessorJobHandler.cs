@@ -11,15 +11,16 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
     private readonly YAJQOptions options;
     private readonly IJobProcessorFactory processorFactory;
     private readonly IJobRepository repository;
-    private readonly List<PersistedJob> scheduledJobs;
     private readonly IProcessorSelectionStrategy selectionStrategy;
     private readonly IOpenJobProvider openJobProvider;
+    private readonly IScheduledJobSubHandler subHandler;
     private CancellationTokenSource source;
 
 
     public MultiProcessorJobHandler(ILogger<MultiProcessorJobHandler> logger, IModuleHelper moduleHelper,
         IJobRepository repository, YAJQOptions options, IJobProcessorFactory processorFactory,
-        IProcessorSelectionStrategy selectionStrategy, IOpenJobProvider openJobProvider)
+        IProcessorSelectionStrategy selectionStrategy, IOpenJobProvider openJobProvider,
+        IScheduledJobSubHandler subHandler)
     {
         this.logger = logger;
         this.repository = repository;
@@ -27,10 +28,9 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         this.processorFactory = processorFactory;
         this.selectionStrategy = selectionStrategy;
         this.openJobProvider = openJobProvider;
+        this.subHandler = subHandler;
 
         source = new CancellationTokenSource();
-        scheduledJobs = new List<PersistedJob>();
-
         HandlerId = $"{Environment.MachineName}:{Guid.NewGuid().ToString().Split("-").First()}";
 
         foreach (var _ in Enumerable.Range(0, options.NumberOfProcessors))
@@ -41,17 +41,13 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         repository.Update += OnJobUpdate;
     }
 
-    public void Dispose()
-    {
-        source.Dispose();
-    }
+    public void Dispose() => source.Dispose();
 
     public string HandlerId { get; private set; }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        //TODO create sub handler for scheduled jobs
-        Task.Run(() => HandleScheduledJobs(cancellationToken), cancellationToken).ContinueWith(_ => { });
+        subHandler.Start(HandlerId, selectionStrategy, ProcessJobAsync, cancellationToken);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -61,7 +57,6 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (!result.WasSuccess)
             {
-                //logger.LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
                 LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
                 continue;
             }
@@ -71,7 +66,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             if (result.Value.JobType == JobType.Scheduled)
             {
                 LogTrace("Scheduled job, adding to backlog");
-                scheduledJobs.Add(result.Value);
+                subHandler.AddScheduledJob(result.Value);
                 continue;
             }
 
@@ -80,7 +75,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
                 .ConfigureAwait(false);
         }
     }
-    
+
     private async Task ProcessJobAsync(PersistedJob job, IJobProcessor processor, CancellationToken cancellationToken)
     {
         var processingResult = processor.ProcessJob(job.Descriptor, cancellationToken);
@@ -112,32 +107,6 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
 
         source.Cancel();
         source = new CancellationTokenSource();
-    }
-
-    private async void HandleScheduledJobs(CancellationToken token)
-    {
-        while (!token.IsCancellationRequested)
-        {
-            foreach (var job in scheduledJobs.ToList())
-            {
-                if (job.ScheduledTime < DateTimeOffset.Now)
-                {
-                    var processor = await selectionStrategy.GetNextProcessorAsync();
-
-                    var _ = Task.Run(() => ProcessJobAsync(job, processor, token), token)
-                        .ConfigureAwait(false);
-                    scheduledJobs.Remove(job);
-                }
-                else
-                {
-                    var result = await repository.RefreshTokenAsync(job.Id, HandlerId);
-                    if (!result.WasSuccess)
-                        LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
-                }
-            }
-
-            await Task.Delay(options.ScheduledJobTimerInterval, token).ContinueWith(_ => { });
-        }
     }
 
     private void LogTrace(string message, params object[] args) =>
