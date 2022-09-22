@@ -16,7 +16,7 @@ jobs:
       # Core
       - name: publish core on version change
         id: publish_core
-        uses: brandedoutcast/publish-nuget@v2
+        uses: alirezanet/publish-nuget@v3.0.4
         with:
           PROJECT_FILE_PATH: src/YAJQ.Core/YAJQ.Core.csproj
           BUILD_CONFIGURATION: Release
@@ -26,7 +26,7 @@ jobs:
       # Memory Persistence
       - name: publish persistence on version change
         id: publish_persistence
-        uses: brandedoutcast/publish-nuget@v2
+        uses: alirezanet/publish-nuget@v3.0.4
         with:
           PROJECT_FILE_PATH: src/YAJQ.Persistence.Memory/YAJQ.Persistence.Memory.csproj
           BUILD_CONFIGURATION: Release
@@ -36,7 +36,7 @@ jobs:
       # DI
       - name: publish DI on version change
         id: publish_di
-        uses: brandedoutcast/publish-nuget@v2
+        uses: alirezanet/publish-nuget@v3.0.4
         with:
           PROJECT_FILE_PATH: src/YAJQ.DependencyInjection/YAJQ.DependencyInjection.csproj
           BUILD_CONFIGURATION: Release
@@ -46,7 +46,7 @@ jobs:
       # Hosted
       - name: publish Hosted on version change
         id: publish_hosted
-        uses: brandedoutcast/publish-nuget@v2
+        uses: alirezanet/publish-nuget@v3.0.4
         with:
           PROJECT_FILE_PATH: src/YAJQ.Hosted/YAJQ.Hosted.csproj
           BUILD_CONFIGURATION: Release
