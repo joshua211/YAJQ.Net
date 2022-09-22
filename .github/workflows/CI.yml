@@ -1,11 +1,11 @@
 name: CI
 
 on:
- push:
+  push:
     branches: [ "master" ]
- pull_request:
+  pull_request:
     branches: [ "master" ]
-    
+
 jobs:
   publish:
     name: build, pack & publish
@@ -13,41 +13,42 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # - name: Setup dotnet
-      #   uses: actions/setup-dotnet@v1
-      #   with:
-      #     dotnet-version: 3.1.200
-
-      # Publish
-      - name: publish on version change
-        id: publish_nuget
+      # Core
+      - name: publish core on version change
+        id: publish_core
         uses: brandedoutcast/publish-nuget@v2
         with:
-          # Filepath of the project to be packaged, relative to root of repository
           PROJECT_FILE_PATH: src/YAJQ.Core/YAJQ.Core.csproj
-          
-          # Configuration to build and package
-          BUILD_CONFIGURATION: Release     
-          # NuGet package id, used for version detection & defaults to project name
+          BUILD_CONFIGURATION: Release
           PACKAGE_NAME: YAJQ.Core
-
-          # Regex pattern to extract version info in a capturing group
-          # VERSION_REGEX: ^\s*<Version>(.*)<\/Version>\s*$
-          
-          # Useful with external providers like Nerdbank.GitVersioning, ignores VERSION_FILE_PATH & VERSION_REGEX
-          # VERSION_STATIC: 1.0.0
-
-          # Flag to toggle git tagging, enabled by default
-          # TAG_COMMIT: true
-
-          # Format of the git tag, [*] gets replaced with actual version
-          # TAG_FORMAT: v*
-
-          # API key to authenticate with NuGet server
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-
-          # NuGet server uri hosting the packages, defaults to https://api.nuget.org
-          # NUGET_SOURCE: https://api.nuget.org
-
-          # Flag to toggle pushing symbols along with nuget package to the server, disabled by default
-          # INCLUDE_SYMBOLS: false
+      
+      # Memory Persistence
+      - name: publish persistence on version change
+        id: publish_persistence
+        uses: brandedoutcast/publish-nuget@v2
+        with:
+          PROJECT_FILE_PATH: src/YAJQ.Persistence.Memory/YAJQ.Persistence.Memory.csproj
+          BUILD_CONFIGURATION: Release
+          PACKAGE_NAME: YAJQ.Persistence.Memory
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          
+      # DI
+      - name: publish DI on version change
+        id: publish_di
+        uses: brandedoutcast/publish-nuget@v2
+        with:
+          PROJECT_FILE_PATH: src/YAJQ.DependencyInjection/YAJQ.DependencyInjection.csproj
+          BUILD_CONFIGURATION: Release
+          PACKAGE_NAME: YAJQ.DependencyInjection
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          
+      # Hosted
+      - name: publish Hosted on version change
+        id: publish_hosted
+        uses: brandedoutcast/publish-nuget@v2
+        with:
+          PROJECT_FILE_PATH: src/YAJQ.Hosted/YAJQ.Hosted.csproj
+          BUILD_CONFIGURATION: Release
+          PACKAGE_NAME: YAJQ.Hosted
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
