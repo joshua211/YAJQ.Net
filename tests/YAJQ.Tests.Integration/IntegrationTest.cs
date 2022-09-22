@@ -39,6 +39,7 @@ public abstract class IntegrationTest : IDisposable
         collection.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         collection.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         collection.AddTransient<IModuleHelper, ModuleHelper>();
+        collection.AddTransient<IOpenJobProvider, OpenJobProvider>();
         collection.AddSingleton(new YAJQOptions
         {
             TransientFaultMaxTries = 1,

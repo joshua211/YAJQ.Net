@@ -48,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IJobProcessorFactory, JobProcessorFactory>();
         services.AddTransient<IProcessorSelectionStrategy, RoundRobinProcessorSelectionStrategy>();
         services.AddTransient<ITransientFaultHandler, DefaultTransientFaultHandler>();
+        services.AddTransient<IOpenJobProvider, OpenJobProvider>();
         services.AddSingleton<IJobPersistence, MemoryPersistence>();
         services.AddSingleton<IJobArchive, MemoryArchive>();
         services.AddTransient<YAJQOptions>(provider =>

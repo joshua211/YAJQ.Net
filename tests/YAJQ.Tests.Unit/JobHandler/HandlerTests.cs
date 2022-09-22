@@ -25,8 +25,10 @@ public class HandlerTests : TestBase
         var repository = Substitute.For<IJobRepository>();
         repository.GetNextJobAsync().Returns(Error.NotFound(), PersistedSyncJob());
 
+        var provider = new OpenJobProvider(repository, Substitute.For<ILogger<OpenJobProvider>>(), options);
+
         var handler = new MultiProcessorJobHandler(Substitute.For<ILogger<MultiProcessorJobHandler>>(), moduleHelper,
-            repository, options, fakeFactory, new RoundRobinProcessorSelectionStrategy());
+            repository, options, fakeFactory, new RoundRobinProcessorSelectionStrategy(), provider);
 
         //Act
         Task.Run(() => handler.Start(src.Token));
