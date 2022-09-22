@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.ResponseCompression;
 using YAJQ.DependencyInjection;
 using YAJQ.Examples.Web;
 using YAJQ.Examples.Web.Hubs;
 using YAJQ.Hosted;
-using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 

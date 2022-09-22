@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using YAJQ.Core.Archive;
-using YAJQ.Core.Common;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
+using YAJQ.Core.Archive.Interfaces;
+using YAJQ.Core.Common;
 
 namespace YAJQ.Tests.Unit.MemoryPersistence;
 

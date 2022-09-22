@@ -1,4 +1,6 @@
-﻿using YAJQ.Core.JobProcessor;
+﻿using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
 
 namespace YAJQ.Core.JobHandler;
 
@@ -35,10 +37,7 @@ public class RoundRobinProcessorSelectionStrategy : IProcessorSelectionStrategy
         var next = availableProcessors[cursor];
         cursor++;
 
-        while (next.IsProcessing)
-        {
-            await Task.Delay(10);
-        }
+        while (next.IsProcessing) await Task.Delay(10);
 
         return next;
     }

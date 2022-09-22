@@ -1,7 +1,7 @@
 ﻿using YAJQ.Core.Common;
-using YAJQ.Core.Interfaces;
+using YAJQ.Core.JobQueue.Interfaces;
 
-namespace YAJQ.Core.Persistence;
+namespace YAJQ.Core.Persistence.Interfaces;
 
 public interface IJobRepository
 {

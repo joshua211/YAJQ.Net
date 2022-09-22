@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using YAJQ.Tests.Shared;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
+using YAJQ.Tests.Shared;
 
 namespace YAJQ.Tests.Integration.Concurrency;
 
@@ -40,7 +40,7 @@ public class HandlerTests : ConcurrencyTest
         StartJobHandler(SecondJobHandler, cts.Token);
 
         //Act
-        var ids = (await PublishLongRunningJobs(2));
+        var ids = await PublishLongRunningJobs(2);
         await WaitForCompletionAsync(ids, 5000);
 
         //Assert

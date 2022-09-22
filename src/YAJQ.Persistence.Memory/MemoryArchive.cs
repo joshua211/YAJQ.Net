@@ -1,4 +1,4 @@
-﻿using YAJQ.Core.Archive;
+﻿using YAJQ.Core.Archive.Interfaces;
 using YAJQ.Core.Common;
 using YAJQ.Core.Persistence;
 

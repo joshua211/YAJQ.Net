@@ -1,7 +1,7 @@
 ﻿using YAJQ.Core.Common;
 using YAJQ.Core.Persistence;
 
-namespace YAJQ.Core.Archive;
+namespace YAJQ.Core.Archive.Interfaces;
 
 public interface IJobArchive
 {

@@ -1,10 +1,12 @@
 ﻿using System;
-using YAJQ.Core;
-using YAJQ.Core.JobProcessor;
-using YAJQ.Core.Persistence;
-using YAJQ.Core.Utils;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using YAJQ.Core;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.Core.Utils;
 
 namespace YAJQ.Tests.Unit;
 
@@ -26,7 +28,7 @@ public abstract class TestBase
         fakeProvider.GetService(typeof(TestService)).Returns(service);
         fakePersistence = Substitute.For<IJobPersistence>();
         fakeRepository = Substitute.For<IJobRepository>();
-        fakeRepository.AddJobAsync(default, default, default).ReturnsForAnyArgs(DefaultJobId);
+        fakeRepository.AddJobAsync(default).ReturnsForAnyArgs(DefaultJobId);
         moduleHelper = new ModuleHelper();
         logger = Substitute.For<ILogger>();
         service = new TestService();
@@ -40,12 +42,18 @@ public abstract class TestBase
 
     public string DefaultJobId => "XXXXXXXXXXXXXXXXX";
 
-    public PersistedJob PersistedSyncJob(string? id = null) =>
-        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? DefaultJobId), TestService.SyncDescriptor());
+    public PersistedJob PersistedSyncJob(string? id = null)
+    {
+        return PersistedJob.Asap(JobId.With(id ?? DefaultJobId), TestService.SyncDescriptor());
+    }
 
-    public PersistedJob PersistedAsyncJob(string? id = null) =>
-        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? DefaultJobId), TestService.AsyncDescriptor());
+    public PersistedJob PersistedAsyncJob(string? id = null)
+    {
+        return PersistedJob.Asap(JobId.With(id ?? DefaultJobId), TestService.AsyncDescriptor());
+    }
 
-    public PersistedJob PersistedExcJob(string? id = null) =>
-        PersistedJob.Asap(Core.Persistence.JobId.With(id ?? DefaultJobId), TestService.ExceptionDescriptor());
+    public PersistedJob PersistedExcJob(string? id = null)
+    {
+        return PersistedJob.Asap(JobId.With(id ?? DefaultJobId), TestService.ExceptionDescriptor());
+    }
 }

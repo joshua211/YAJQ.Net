@@ -1,33 +1,45 @@
 ﻿using System;
 using System.Threading.Tasks;
-using YAJQ.Core.Interfaces;
 using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
 
 namespace YAJQ.Tests.Unit;
 
 public class TestService
 {
-    public int SyncCalls = 0;
-    public int AsyncCalls = 0;
-    public int ExceptionCalls = 0;
+    public int AsyncCalls;
+    public int ExceptionCalls;
+    public int SyncCalls;
 
-    public static IJobDescriptor SyncDescriptor() =>
-        new JobDescriptor("Something", typeof(TestService).FullName, typeof(TestService).Module.Name,
+    public static IJobDescriptor SyncDescriptor()
+    {
+        return new JobDescriptor("Something", typeof(TestService).FullName, typeof(TestService).Module.Name,
             Array.Empty<object>());
+    }
 
-    public static IJobDescriptor SyncWithValueDescriptor() =>
-        new JobDescriptor("SomethingWithValue", typeof(TestService).FullName, typeof(TestService).Module.Name, new object[] {1});
+    public static IJobDescriptor SyncWithValueDescriptor()
+    {
+        return new JobDescriptor("SomethingWithValue", typeof(TestService).FullName, typeof(TestService).Module.Name,
+            new object[] {1});
+    }
 
-    public static IJobDescriptor ExceptionDescriptor() =>
-        new JobDescriptor("SomethingException", typeof(TestService).FullName, typeof(TestService).Module.Name,
+    public static IJobDescriptor ExceptionDescriptor()
+    {
+        return new JobDescriptor("SomethingException", typeof(TestService).FullName, typeof(TestService).Module.Name,
             Array.Empty<object>());
-    
-    public static IJobDescriptor AsyncDescriptor() =>
-        new JobDescriptor("SomethingAsync", typeof(TestService).FullName, typeof(TestService).Module.Name,
+    }
+
+    public static IJobDescriptor AsyncDescriptor()
+    {
+        return new JobDescriptor("SomethingAsync", typeof(TestService).FullName, typeof(TestService).Module.Name,
             Array.Empty<object>());
-    
-    public static IJobDescriptor AsyncWithValueDescriptor() =>
-        new JobDescriptor("SomethingWithValueAsync", typeof(TestService).FullName, typeof(TestService).Module.Name, new object[] {1});
+    }
+
+    public static IJobDescriptor AsyncWithValueDescriptor()
+    {
+        return new JobDescriptor("SomethingWithValueAsync", typeof(TestService).FullName,
+            typeof(TestService).Module.Name, new object[] {1});
+    }
 
     public void Something()
     {

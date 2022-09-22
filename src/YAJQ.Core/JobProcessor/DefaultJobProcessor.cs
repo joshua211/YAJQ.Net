@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using YAJQ.Core.Common;
-using YAJQ.Core.Interfaces;
-using YAJQ.Core.Utils;
 using Microsoft.Extensions.Logging;
+using YAJQ.Core.Common;
+using YAJQ.Core.JobProcessor.Interfaces;
+using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
+using YAJQ.Core.Utils;
 
 namespace YAJQ.Core.JobProcessor;
 
@@ -98,10 +100,7 @@ public class DefaultJobProcessor : JobProcessorBase
     {
         object invokeResult = null;
         invokeResult = method.Invoke(jobObject, args);
-        if (invokeResult is Task task)
-        {
-            task.Wait();
-        }
+        if (invokeResult is Task task) task.Wait();
     }
 
     private static Type? GetType(string name)

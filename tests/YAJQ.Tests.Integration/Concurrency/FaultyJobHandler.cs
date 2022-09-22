@@ -3,7 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using YAJQ.Core;
 using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Tests.Integration.Concurrency;
 
@@ -69,9 +71,13 @@ public class FaultyJobHandler : IJobHandler
         return nextJob;
     }
 
-    private bool IsHandlerResponsibleForJob(PersistedJob job) =>
-        job.ConcurrencyToken == HandlerId;
+    private bool IsHandlerResponsibleForJob(PersistedJob job)
+    {
+        return job.ConcurrencyToken == HandlerId;
+    }
 
-    private bool IsUpdateOverdue(PersistedJob job) =>
-        DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    private bool IsUpdateOverdue(PersistedJob job)
+    {
+        return DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    }
 }

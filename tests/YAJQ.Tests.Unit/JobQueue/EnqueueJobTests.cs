@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using YAJQ.Core.JobQueue;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
+using YAJQ.Core.JobQueue;
 
 namespace YAJQ.Tests.Unit.JobQueue;
 

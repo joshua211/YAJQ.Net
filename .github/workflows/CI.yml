@@ -32,7 +32,7 @@ jobs:
           BUILD_CONFIGURATION: Release
           PACKAGE_NAME: YAJQ.Persistence.Memory
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          
+      
       # DI
       - name: publish DI on version change
         id: publish_di
@@ -42,7 +42,7 @@ jobs:
           BUILD_CONFIGURATION: Release
           PACKAGE_NAME: YAJQ.DependencyInjection
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          
+      
       # Hosted
       - name: publish Hosted on version change
         id: publish_hosted
