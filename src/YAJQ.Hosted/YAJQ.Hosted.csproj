@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>YAJQ.Hosted</PackageId>
-        <Version>0.0.1</Version>
+        <Version>0.0.2</Version>
         <Authors>Joshua Hillmann</Authors>
         <PackageTags>Background;Worker;Scheduled;Job;Task;Delayed;Queue;Scheduler;Hosted;Asp;</PackageTags>
         <Description>
