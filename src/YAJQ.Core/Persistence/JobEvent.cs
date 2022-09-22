@@ -8,6 +8,6 @@ public class JobEvent
         State = state;
     }
 
-    public JobId JobId { get; private set; }
-    public JobState State { get; private set; }
+    public JobId JobId { get; }
+    public JobState State { get; }
 }

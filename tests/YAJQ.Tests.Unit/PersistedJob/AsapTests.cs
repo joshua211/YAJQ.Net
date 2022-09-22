@@ -1,6 +1,6 @@
-﻿using YAJQ.Core.Persistence;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Xunit;
+using YAJQ.Core.Persistence;
 
 namespace YAJQ.Tests.Unit.PersistedJobT;
 

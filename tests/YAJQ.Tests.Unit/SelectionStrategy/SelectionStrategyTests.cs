@@ -1,9 +1,11 @@
 ﻿using System.Threading.Tasks;
-using YAJQ.Core.JobHandler;
-using YAJQ.Core.JobProcessor;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
 
 namespace YAJQ.Tests.Unit.SelectionStrategy;
 

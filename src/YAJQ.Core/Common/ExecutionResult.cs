@@ -1,11 +1,11 @@
 ﻿namespace YAJQ.Core.Common;
 
+/// <summary>
+/// Value that indicates the outcome of an operation.
+/// </summary>
+/// <typeparam name="TValue">The type of the operation or <see cref="Success"/> if it does not return anything</typeparam>
 public record struct ExecutionResult<TValue>
 {
-    public Error Error { get; private set; }
-    public TValue Value { get; private set; }
-    public bool WasSuccess { get; private set; }
-
     public ExecutionResult(TValue value)
     {
         Value = value;
@@ -20,16 +20,30 @@ public record struct ExecutionResult<TValue>
         WasSuccess = false;
     }
 
+    public Error Error { get; }
+    public TValue Value { get; }
+    public bool WasSuccess { get; }
+
+    public static ExecutionResult<Success> Success => new(new Success());
+
     public TOut Match<TOut>(Func<TValue, TOut> onSuccess, Func<Error, TOut> onError)
     {
-        return WasSuccess ? onSuccess(Value) : onError(this.Error);
+        return WasSuccess ? onSuccess(Value) : onError(Error);
     }
-    
 
-    public static implicit operator ExecutionResult<TValue>(TValue value) => new(value);
-    public static implicit operator ExecutionResult<TValue>(Error error) => new(error);
 
-    public static ExecutionResult<Success> Success => new ExecutionResult<Success>(new Success());
+    public static implicit operator ExecutionResult<TValue>(TValue value)
+    {
+        return new(value);
+    }
+
+    public static implicit operator ExecutionResult<TValue>(Error error)
+    {
+        return new(error);
+    }
 }
 
+/// <summary>
+/// Represents a successful execution
+/// </summary>
 public readonly record struct Success;

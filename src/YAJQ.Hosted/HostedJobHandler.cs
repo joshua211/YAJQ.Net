@@ -1,6 +1,7 @@
-﻿using YAJQ.Core.JobHandler;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
 
 namespace YAJQ.Hosted;
 

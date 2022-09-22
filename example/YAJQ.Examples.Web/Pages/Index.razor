@@ -42,8 +42,8 @@
 @code
 {
     private HubConnection? hubConnection;
-    private List<string> openJobs = new();
-    private List<string> completedJobs = new();
+    private readonly List<string> openJobs = new();
+    private readonly List<string> completedJobs = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,7 +51,7 @@
             .WithUrl(NavigationManager.ToAbsoluteUri("/jobs"))
             .Build();
 
-        hubConnection.On<string>("CompleteJob", (jobId) =>
+        hubConnection.On<string>("CompleteJob", jobId =>
         {
             openJobs.Remove(jobId);
             completedJobs.Add(jobId);
@@ -90,4 +90,3 @@
         await Service.AddExceptionJob(id);
     }
 }
-

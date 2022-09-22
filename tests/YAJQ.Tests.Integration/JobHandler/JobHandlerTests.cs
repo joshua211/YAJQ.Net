@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YAJQ.Core.Archive;
-using YAJQ.Core.Persistence;
-using YAJQ.Persistence.Memory;
-using YAJQ.Tests.Shared;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
+using YAJQ.Core.Archive.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.Persistence.Memory;
+using YAJQ.Tests.Shared;
 
 namespace YAJQ.Tests.Integration.JobHandler;
 
@@ -19,7 +20,7 @@ public class JobHandlerTests : IntegrationTest
 
     public JobHandlerTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
-        this.helper = outputHelper;
+        helper = outputHelper;
         StartJobHandler();
     }
 

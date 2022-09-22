@@ -15,7 +15,7 @@ public class FieldToConstantArgumentVisitor : ExpressionVisitor
             var valueExpression = Expression.Constant(argumentValue, argument.Type);
             argumentExpressions.Add(valueExpression);
         }
-        
+
         return Expression.Call(node.Object, node.Method, argumentExpressions);
     }
 }

@@ -1,7 +1,11 @@
-﻿using YAJQ.Core.Interfaces;
+﻿using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
 
 namespace YAJQ.Core.Persistence;
 
+/// <summary>
+/// Model class for jobs that failed or completed
+/// </summary>
 public class ArchivedJob
 {
     public ArchivedJob(JobId id, IJobDescriptor descriptor, DateTimeOffset creationTime, DateTimeOffset scheduledTime,
@@ -23,17 +27,17 @@ public class ArchivedJob
         State = state;
     }
 
-    public JobId Id { get; private set; }
-    public IJobDescriptor Descriptor { get; private set; }
-    public DateTimeOffset CreationTime { get; private set; }
-    public DateTimeOffset ScheduledTime { get; private set; }
-    public DateTimeOffset LastUpdated { get; private set; }
-    public string LastConcurrencyToken { get; private set; }
-    public JobType JobType { get; private set; }
-    public JobState State { get; private set; }
-    public DateTimeOffset ArchiveTime { get; private set; }
-    public string HandlerId { get; private set; }
-    public string ProcessorId { get; private set; }
-    public TimeSpan ExecutionTime { get; private set; }
-    public TimeSpan TotalQueueTime { get; private set; }
+    public JobId Id { get; }
+    public IJobDescriptor Descriptor { get; }
+    public DateTimeOffset CreationTime { get; }
+    public DateTimeOffset ScheduledTime { get; }
+    public DateTimeOffset LastUpdated { get; }
+    public string LastConcurrencyToken { get; }
+    public JobType JobType { get; }
+    public JobState State { get; }
+    public DateTimeOffset ArchiveTime { get; }
+    public string HandlerId { get; }
+    public string ProcessorId { get; }
+    public TimeSpan ExecutionTime { get; }
+    public TimeSpan TotalQueueTime { get; }
 }

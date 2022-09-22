@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>YAJQ.DependencyInjection</PackageId>
-        <Version>0.0.1</Version>
+        <Version>0.0.2</Version>
         <Authors>Joshua Hillmann</Authors>
         <PackageTags>Background;Worker;Scheduled;Job;Task;Delayed;Queue;Scheduler;Hosted;Asp;</PackageTags>
         <Description>
@@ -21,14 +21,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\YAJQ.Core\YAJQ.Core.csproj" />
-      <ProjectReference Include="..\YAJQ.Hosted\YAJQ.Hosted.csproj" />
-      <ProjectReference Include="..\YAJQ.Persistence.Memory\YAJQ.Persistence.Memory.csproj" />
+        <ProjectReference Include="..\YAJQ.Core\YAJQ.Core.csproj"/>
+        <ProjectReference Include="..\YAJQ.Hosted\YAJQ.Hosted.csproj"/>
+        <ProjectReference Include="..\YAJQ.Persistence.Memory\YAJQ.Persistence.Memory.csproj"/>
     </ItemGroup>
 
 </Project>

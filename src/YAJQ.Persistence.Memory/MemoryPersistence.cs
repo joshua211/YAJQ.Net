@@ -1,7 +1,8 @@
 ﻿using System.Collections.Immutable;
-using YAJQ.Core.Archive;
+using YAJQ.Core.Archive.Interfaces;
 using YAJQ.Core.Common;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Persistence.Memory;
 

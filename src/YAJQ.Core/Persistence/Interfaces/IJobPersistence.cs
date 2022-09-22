@@ -1,6 +1,6 @@
 ﻿using YAJQ.Core.Common;
 
-namespace YAJQ.Core.Persistence;
+namespace YAJQ.Core.Persistence.Interfaces;
 
 public interface IJobPersistence
 {

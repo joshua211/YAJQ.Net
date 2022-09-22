@@ -1,6 +1,6 @@
-﻿using YAJQ.Core.JobProcessor;
+﻿using YAJQ.Core.JobProcessor.Interfaces;
 
-namespace YAJQ.Core.JobHandler;
+namespace YAJQ.Core.JobHandler.Interfaces;
 
 public interface IProcessorSelectionStrategy
 {

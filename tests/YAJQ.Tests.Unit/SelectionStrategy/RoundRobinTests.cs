@@ -1,15 +1,20 @@
 ﻿using System.Threading.Tasks;
-using YAJQ.Core.JobHandler;
-using YAJQ.Core.JobProcessor;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
 
 namespace YAJQ.Tests.Unit.SelectionStrategy;
 
 public class RoundRobinTests : SelectionStrategyTests
 {
-    public override IProcessorSelectionStrategy GetStrategy() => new RoundRobinProcessorSelectionStrategy();
+    public override IProcessorSelectionStrategy GetStrategy()
+    {
+        return new RoundRobinProcessorSelectionStrategy();
+    }
 
     [Fact]
     public async Task ReturnsAllProcessorsOnce()

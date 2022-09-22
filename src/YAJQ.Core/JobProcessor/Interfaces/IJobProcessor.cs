@@ -1,7 +1,7 @@
 ﻿using YAJQ.Core.Common;
-using YAJQ.Core.Interfaces;
+using YAJQ.Core.JobQueue.Interfaces;
 
-namespace YAJQ.Core.JobProcessor;
+namespace YAJQ.Core.JobProcessor.Interfaces;
 
 public interface IJobProcessor
 {

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Xunit;
 using YAJQ.Core;
 using YAJQ.Core.Common;
 using YAJQ.Core.JobHandler;
 using YAJQ.Core.Persistence;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Xunit;
+using YAJQ.Core.Persistence.Interfaces;
 
 namespace YAJQ.Tests.Unit.JobHandler;
 
@@ -25,15 +26,19 @@ public class HandlerTests : TestBase
         var repository = Substitute.For<IJobRepository>();
         repository.GetNextJobAsync().Returns(Error.NotFound(), PersistedSyncJob());
 
+        var provider = new OpenJobProvider(repository, Substitute.For<ILogger<OpenJobProvider>>(), options);
+        var subhandler =
+            new ScheduledJobSubHandler(options, repository, Substitute.For<ILogger<ScheduledJobSubHandler>>());
+
         var handler = new MultiProcessorJobHandler(Substitute.For<ILogger<MultiProcessorJobHandler>>(), moduleHelper,
-            repository, options, fakeFactory, new RoundRobinProcessorSelectionStrategy());
+            repository, options, fakeFactory, new RoundRobinProcessorSelectionStrategy(), provider, subhandler);
 
         //Act
         Task.Run(() => handler.Start(src.Token));
         await Task.Delay(300);
         repository.Update +=
             Raise.Event<EventHandler<JobEvent>>(new object(),
-                new JobEvent(Core.Persistence.JobId.New, JobState.Pending));
+                new JobEvent(JobId.New, JobState.Pending));
         await Task.Delay(300);
 
         //Assert

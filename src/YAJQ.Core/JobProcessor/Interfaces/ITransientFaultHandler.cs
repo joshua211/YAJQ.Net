@@ -1,4 +1,4 @@
-﻿namespace YAJQ.Core.JobProcessor;
+﻿namespace YAJQ.Core.JobProcessor.Interfaces;
 
 public interface ITransientFaultHandler
 {

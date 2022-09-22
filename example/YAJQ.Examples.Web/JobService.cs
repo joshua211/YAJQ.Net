@@ -1,6 +1,7 @@
-﻿using YAJQ.Core.JobQueue;
+﻿using Microsoft.AspNetCore.SignalR;
+using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
 using YAJQ.Examples.Web.Hubs;
-using Microsoft.AspNetCore.SignalR;
 
 namespace YAJQ.Examples.Web;
 

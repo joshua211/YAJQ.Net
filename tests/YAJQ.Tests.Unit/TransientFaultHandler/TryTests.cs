@@ -1,10 +1,10 @@
 ﻿using System;
-using YAJQ.Core;
-using YAJQ.Core.JobProcessor;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
+using YAJQ.Core;
+using YAJQ.Core.JobProcessor;
 
 namespace YAJQ.Tests.Unit.TransientFaultHandler;
 
@@ -52,7 +52,7 @@ public class TryTests : TestBase
         //Arrange
         var calls = 0;
         var wasCalled = false;
-        Action action = () =>
+        var action = () =>
         {
             calls++;
             if (calls == 1)

@@ -1,40 +1,43 @@
-﻿using YAJQ.Core.JobProcessor;
+﻿using Microsoft.Extensions.Logging;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.JobProcessor;
+using YAJQ.Core.JobProcessor.Interfaces;
 using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
 using YAJQ.Core.Utils;
-using Microsoft.Extensions.Logging;
 
 namespace YAJQ.Core.JobHandler;
 
 public class MultiProcessorJobHandler : IJobHandler, IDisposable
 {
     private readonly ILogger<MultiProcessorJobHandler> logger;
+    private readonly IOpenJobProvider openJobProvider;
     private readonly YAJQOptions options;
     private readonly IJobProcessorFactory processorFactory;
     private readonly IJobRepository repository;
-    private readonly List<PersistedJob> scheduledJobs;
     private readonly IProcessorSelectionStrategy selectionStrategy;
+    private readonly IScheduledJobSubHandler subHandler;
     private CancellationTokenSource source;
 
 
     public MultiProcessorJobHandler(ILogger<MultiProcessorJobHandler> logger, IModuleHelper moduleHelper,
         IJobRepository repository, YAJQOptions options, IJobProcessorFactory processorFactory,
-        IProcessorSelectionStrategy selectionStrategy)
+        IProcessorSelectionStrategy selectionStrategy, IOpenJobProvider openJobProvider,
+        IScheduledJobSubHandler subHandler)
     {
         this.logger = logger;
         this.repository = repository;
         this.options = options;
         this.processorFactory = processorFactory;
         this.selectionStrategy = selectionStrategy;
+        this.openJobProvider = openJobProvider;
+        this.subHandler = subHandler;
 
         source = new CancellationTokenSource();
-        scheduledJobs = new List<PersistedJob>();
-
         HandlerId = $"{Environment.MachineName}:{Guid.NewGuid().ToString().Split("-").First()}";
 
         foreach (var _ in Enumerable.Range(0, options.NumberOfProcessors))
-        {
             selectionStrategy.AddProcessor(processorFactory.New());
-        }
 
         repository.Update += OnJobUpdate;
     }
@@ -44,22 +47,20 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         source.Dispose();
     }
 
-    public string HandlerId { get; private set; }
+    public string HandlerId { get; }
 
     public async Task Start(CancellationToken cancellationToken)
     {
-        //TODO create sub handler for scheduled jobs
-        Task.Run(() => HandleScheduledJobs(cancellationToken), cancellationToken).ContinueWith(_ => { });
+        subHandler.Start(HandlerId, selectionStrategy, ProcessJobAsync, cancellationToken);
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var nextJob = await WaitForNextJobAsync(cancellationToken);
+            var nextJob = await openJobProvider.GetNextJobAsync(HandlerId, source, cancellationToken);
             LogTrace("Found open job: {Id}", nextJob.Id);
 
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (!result.WasSuccess)
             {
-                //logger.LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
                 LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
                 continue;
             }
@@ -69,7 +70,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             if (result.Value.JobType == JobType.Scheduled)
             {
                 LogTrace("Scheduled job, adding to backlog");
-                scheduledJobs.Add(result.Value);
+                subHandler.AddScheduledJob(result.Value);
                 continue;
             }
 
@@ -77,53 +78,6 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             var _ = Task.Run(() => ProcessJobAsync(result.Value, processor, cancellationToken), cancellationToken)
                 .ConfigureAwait(false);
         }
-    }
-
-    private async Task<PersistedJob> WaitForNextJobAsync(CancellationToken cancellationToken)
-    {
-        //TODO check last job id == current job id
-        PersistedJob? nextJob = null;
-        while (nextJob is null)
-        {
-            var nextPersistedJob = await repository.GetNextJobAsync();
-            if (!nextPersistedJob.WasSuccess)
-            {
-                LogTrace("No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
-
-                await Task.Delay(options.HandlerTimeout, source.Token).ContinueWith(t =>
-                {
-                    if (t.IsCanceled)
-                        LogTrace("Waking up from waiting");
-                }, cancellationToken);
-
-                continue;
-            }
-
-            if (nextPersistedJob.Value.JobType == JobType.Scheduled)
-            {
-                if (IsHandlerResponsibleForJob(nextPersistedJob.Value))
-                    //This handler is already responsible for this job, no need to do anything
-                    continue;
-
-                if (!IsUpdateOverdue(nextPersistedJob.Value))
-                    //Another handler is responsible and keeps updating the job
-                    continue;
-            }
-            else
-            {
-                if (nextPersistedJob.Value.State != JobState.Pending ||
-                    !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyToken) &&
-                    !IsUpdateOverdue(nextPersistedJob.Value))
-                    //Another handler is already handling this job or it was already handled
-                    continue;
-
-                //TODO handle instant job that is already handled but processing takes longer than MaxOverdueTimeout
-            }
-
-            nextJob = nextPersistedJob.Value;
-        }
-
-        return nextJob;
     }
 
     private async Task ProcessJobAsync(PersistedJob job, IJobProcessor processor, CancellationToken cancellationToken)
@@ -159,41 +113,23 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
         source = new CancellationTokenSource();
     }
 
-    private async void HandleScheduledJobs(CancellationToken token)
+    private void LogTrace(string message, params object[] args)
     {
-        while (!token.IsCancellationRequested)
-        {
-            foreach (var job in scheduledJobs.ToList())
-            {
-                if (job.ScheduledTime < DateTimeOffset.Now)
-                {
-                    var processor = await selectionStrategy.GetNextProcessorAsync();
-
-                    var _ = Task.Run(() => ProcessJobAsync(job, processor, token), token)
-                        .ConfigureAwait(false);
-                    scheduledJobs.Remove(job);
-                }
-                else
-                {
-                    var result = await repository.RefreshTokenAsync(job.Id, HandlerId);
-                    if (!result.WasSuccess)
-                        LogWarning("Failed to refresh claimed job with Id {Id}", job.Id);
-                }
-            }
-
-            await Task.Delay(options.ScheduledJobTimerInterval, token).ContinueWith(_ => { });
-        }
+        logger.LogTrace($"[{HandlerId}]: " + message, args);
     }
 
-    private void LogTrace(string message, params object[] args) =>
-        logger.LogTrace($"[{HandlerId}]: " + message, args);
-
-    private void LogWarning(string message, params object[] args) =>
+    private void LogWarning(string message, params object[] args)
+    {
         logger.LogWarning($"[{HandlerId}]: " + message, args);
+    }
 
-    private bool IsHandlerResponsibleForJob(PersistedJob job) =>
-        job.ConcurrencyToken == HandlerId;
+    private bool IsHandlerResponsibleForJob(PersistedJob job)
+    {
+        return job.ConcurrencyToken == HandlerId;
+    }
 
-    private bool IsUpdateOverdue(PersistedJob job) =>
-        DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    private bool IsUpdateOverdue(PersistedJob job)
+    {
+        return DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+    }
 }

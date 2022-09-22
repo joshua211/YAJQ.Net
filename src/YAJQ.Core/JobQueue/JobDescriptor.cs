@@ -1,14 +1,9 @@
-﻿using YAJQ.Core.Interfaces;
+﻿using YAJQ.Core.JobQueue.Interfaces;
 
 namespace YAJQ.Core.JobQueue;
 
 public class JobDescriptor : IJobDescriptor
 {
-    public string JobName { get; }
-    public string FullTypeName { get; }
-    public string ModuleName { get; }
-    public IEnumerable<object> Args { get; }
-
     public JobDescriptor(string jobName, string fullTypeName, string moduleName, IEnumerable<object> args)
     {
         JobName = jobName;
@@ -16,6 +11,11 @@ public class JobDescriptor : IJobDescriptor
         ModuleName = moduleName;
         Args = args;
     }
+
+    public string JobName { get; }
+    public string FullTypeName { get; }
+    public string ModuleName { get; }
+    public IEnumerable<object> Args { get; }
 
     public override bool Equals(object? obj)
     {

@@ -1,8 +1,9 @@
-﻿using YAJQ.Core.Archive;
-using YAJQ.Core.Persistence;
-using YAJQ.Persistence.Memory;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
+using YAJQ.Core.Archive.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.Persistence.Memory;
 
 namespace YAJQ.Tests.Integration.Persistence;
 

@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YAJQ.Core;
-using YAJQ.Core.Archive;
-using YAJQ.Core.JobHandler;
-using YAJQ.Core.Persistence;
-using YAJQ.Persistence.Memory;
-using YAJQ.Tests.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
+using YAJQ.Core;
+using YAJQ.Core.Archive.Interfaces;
+using YAJQ.Core.JobHandler;
+using YAJQ.Core.JobHandler.Interfaces;
+using YAJQ.Core.Persistence;
+using YAJQ.Core.Persistence.Interfaces;
+using YAJQ.Persistence.Memory;
+using YAJQ.Tests.Shared;
 
 namespace YAJQ.Tests.Integration.Concurrency;
 
@@ -20,14 +22,14 @@ public abstract class ConcurrencyTest : IntegrationTest
         SecondJobHandler = Provider.GetRequiredService<IJobHandler>();
     }
 
-    public IJobHandler FirstJobHandler { get; private set; }
-    public IJobHandler SecondJobHandler { get; private set; }
+    public IJobHandler FirstJobHandler { get; }
+    public IJobHandler SecondJobHandler { get; }
 
     protected override IServiceCollection Configure(IServiceCollection collection)
     {
         collection.AddSingleton<IJobPersistence, MemoryPersistence>();
         collection.AddSingleton<IJobArchive, MemoryArchive>();
-        collection.AddSingleton<YAJQOptions>(new YAJQOptions
+        collection.AddSingleton(new YAJQOptions
         {
             MaxOverdueTimeout = 5
         });

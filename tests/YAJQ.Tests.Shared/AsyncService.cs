@@ -1,5 +1,5 @@
-﻿using YAJQ.Core.Interfaces;
-using YAJQ.Core.JobQueue;
+﻿using YAJQ.Core.JobQueue;
+using YAJQ.Core.JobQueue.Interfaces;
 
 namespace YAJQ.Tests.Shared;
 
@@ -29,13 +29,22 @@ public class AsyncService : IAsyncService
         CallReceiver.AddCall(id);
     }
 
-    public static IJobDescriptor Descriptor(string id = "XXX") => new JobDescriptor(nameof(DoAsync),
-        typeof(AsyncService).FullName, typeof(AsyncService).Module.Name, new object[] {id});
+    public static IJobDescriptor Descriptor(string id = "XXX")
+    {
+        return new JobDescriptor(nameof(DoAsync),
+            typeof(AsyncService).FullName, typeof(AsyncService).Module.Name, new object[] {id});
+    }
 
-    public static IJobDescriptor LongRunningDescriptor(string id = "XXX") => new JobDescriptor(
-        nameof(DoLongRunningAsync),
-        typeof(AsyncService).FullName, typeof(AsyncService).Module.Name, new object[] {id});
+    public static IJobDescriptor LongRunningDescriptor(string id = "XXX")
+    {
+        return new JobDescriptor(
+            nameof(DoLongRunningAsync),
+            typeof(AsyncService).FullName, typeof(AsyncService).Module.Name, new object[] {id});
+    }
 
-    public static IJobDescriptor ExceptionDescriptor() => new JobDescriptor(nameof(DoExceptionAsync),
-        typeof(AsyncService).FullName, typeof(AsyncService).Module.Name, Array.Empty<object>());
+    public static IJobDescriptor ExceptionDescriptor()
+    {
+        return new JobDescriptor(nameof(DoExceptionAsync),
+            typeof(AsyncService).FullName, typeof(AsyncService).Module.Name, Array.Empty<object>());
+    }
 }
