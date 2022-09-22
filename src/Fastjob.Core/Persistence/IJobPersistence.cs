@@ -1,4 +1,6 @@
-﻿namespace Fastjob.Core.Persistence;
+﻿using Fastjob.Core.Common;
+
+namespace Fastjob.Core.Persistence;
 
 public interface IJobPersistence
 {

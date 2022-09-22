@@ -1,4 +1,13 @@
-﻿namespace Fastjob.Tests.Integration.Persistence;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Fastjob.Core.Common;
+using Fastjob.Core.Persistence;
+using Fastjob.Tests.Shared;
+using FluentAssertions;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace Fastjob.Tests.Integration.Persistence;
 
 public abstract class PersistenceTests : IntegrationTest
 {

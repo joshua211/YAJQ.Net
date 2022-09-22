@@ -37,7 +37,7 @@ public class HandlerTests : TestBase
         await Task.Delay(300);
 
         //Assert
-        repository.Received().TryGetAndMarkJobAsync(Arg.Any<string>(), Arg.Any<string>());
+        repository.Received().TryGetAndMarkJobAsync(Arg.Any<PersistedJob>(), Arg.Any<string>());
         src.Cancel();
     }
 }

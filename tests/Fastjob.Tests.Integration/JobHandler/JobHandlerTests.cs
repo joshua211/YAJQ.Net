@@ -141,7 +141,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), scheduledTime, jobId);
-        await WaitForCompletionAsync(jobId, 60000);
+        await WaitForCompletionAsync(jobId, 10000);
 
         //Assert
         CallReceiver.WasCalledAt(jobId, scheduledTime).Should().BeTrue();

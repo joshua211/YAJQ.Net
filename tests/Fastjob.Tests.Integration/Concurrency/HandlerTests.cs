@@ -92,7 +92,7 @@ public class HandlerTests : ConcurrencyTest
         StartJobHandler(SecondJobHandler, cts.Token);
 
         //Act
-        var ids = await PublishJobs(10);
+        var ids = await PublishJobs(20);
         await WaitForCompletionAsync(ids.ToList());
         var archived = await Archive.GetArchivedJobsAsync();
 
@@ -133,7 +133,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         StartJobHandler(FirstJobHandler, cts.Token);
-        await WaitForCompletionAsync(id, 5000);
+        await WaitForCompletionAsync(id, 10000);
 
         //Assert
         CallReceiver.WasCalledXTimes(id).Should().BeTrue();

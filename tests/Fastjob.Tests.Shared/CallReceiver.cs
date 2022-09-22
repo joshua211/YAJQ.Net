@@ -35,7 +35,7 @@ public static class CallReceiver
     public static bool WasCalledAt(string id, DateTimeOffset time)
     {
         if (ReceivedCalls.TryGetValue(id, out var call))
-            return call.LastCall.Minute == time.Minute && call.LastCall.Second == time.Second;
+            return call.LastCall.ToUnixTimeSeconds() - time.ToUnixTimeSeconds() < 2;
 
         return false;
     }

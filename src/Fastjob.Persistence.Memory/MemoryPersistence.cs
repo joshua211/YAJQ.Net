@@ -1,4 +1,9 @@
-﻿namespace Fastjob.Persistence.Memory;
+﻿using System.Collections.Immutable;
+using Fastjob.Core.Archive;
+using Fastjob.Core.Common;
+using Fastjob.Core.Persistence;
+
+namespace Fastjob.Persistence.Memory;
 
 public class MemoryPersistence : IJobPersistence
 {
@@ -144,7 +149,8 @@ public class MemoryPersistence : IJobPersistence
 
             var job = jobs[cursor.CurrentCursor - 1];
             cursor = cursor.Increase();
-            return Task.FromResult<ExecutionResult<PersistedJob>>(job);
+
+            return Task.FromResult<ExecutionResult<PersistedJob>>(job.DeepCopy());
         }
     }
 
@@ -163,9 +169,9 @@ public class MemoryPersistence : IJobPersistence
                 return Error.NotFound();
 
             var list = jobs.ToList();
-            var currentTrackedJob = list[index];
-            persistedJob.Refresh();
-            list[index] = persistedJob;
+            var modifiedJob = persistedJob.DeepCopy();
+            modifiedJob.Refresh();
+            list[index] = modifiedJob;
             jobs = list.ToImmutableList();
         }
 

@@ -1,4 +1,11 @@
-﻿namespace Fastjob.Tests.Integration.Concurrency;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Fastjob.Core;
+using Fastjob.Core.JobHandler;
+using Fastjob.Core.Persistence;
+
+namespace Fastjob.Tests.Integration.Concurrency;
 
 public class FaultyJobHandler : IJobHandler
 {

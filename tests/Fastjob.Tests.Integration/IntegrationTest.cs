@@ -129,7 +129,10 @@ public abstract class IntegrationTest : IDisposable
             tries++;
             completedIds = (await Archive.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
             if ((tries * 100) % maxWaitTime == 0)
+            {
+                testLogger.Log("TIMEOUT");
                 break;
+            }
         } while (!ids.All(s => completedIds.Contains(s)));
     }
 }

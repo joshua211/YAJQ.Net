@@ -1,4 +1,7 @@
-﻿namespace Fastjob.Core.Persistence;
+﻿using Fastjob.Core.Common;
+using Fastjob.Core.Interfaces;
+
+namespace Fastjob.Core.Persistence;
 
 public class JobRepository : IJobRepository
 {
