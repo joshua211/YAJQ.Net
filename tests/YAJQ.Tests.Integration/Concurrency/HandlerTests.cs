@@ -92,8 +92,8 @@ public class HandlerTests : ConcurrencyTest
         StartJobHandler(SecondJobHandler, cts.Token);
 
         //Act
-        var ids = await PublishJobs(20);
-        await WaitForCompletionAsync(ids.ToList());
+        var ids = await PublishLongRunningJobs(5);
+        await WaitForCompletionAsync(ids.ToList(), 20000);
         var archived = await Archive.GetArchivedJobsAsync();
 
         //Assert
