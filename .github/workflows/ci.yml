@@ -37,4 +37,4 @@ jobs:
       run: dotnet test ./tests/YAJQ.Tests.Unit/YAJQ.Tests.Unit.csproj --no-restore --verbosity normal
       
     - name: Integration
-      run: dotnet test ./tests/YAJQ.Integration.Unit/YAJQ.Tests.Integration.csproj --no-restore --verbosity normal
+      run: dotnet test ./tests/YAJQ.Tests.Integration/YAJQ.Tests.Integration.csproj --no-restore --verbosity normal
