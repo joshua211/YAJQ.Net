@@ -1,12 +1,17 @@
 # Yet Another Job Queue (YAJQ)
+
+[![ci](https://github.com/joshua211/YAJQ.Net/actions/workflows/ci.yml/badge.svg)](https://github.com/joshua211/YAJQ.Net/actions/workflows/ci.yml)
+[![cd](https://github.com/joshua211/YAJQ.Net/actions/workflows/cd.yml/badge.svg)](https://github.com/joshua211/YAJQ.Net/actions/workflows/cd.yml)
+![Nuget](https://img.shields.io/nuget/v/YAJQ.Core?style=flat-square)
+<br/>
 **Preview/Prototype**
 
 ## What is YAJQ
-* distributed and IoC based ~~task scheduler~~ ~~job scheduler~~ job queue
+* distributed and DI based ~~task scheduler~~ ~~job scheduler~~ job queue
 * designed to be used in applications that use the [.Net Host system](https://learn.microsoft.com/en-us/dotnet/core/extensions/generic-host) and Dependency Injection 
-+ simple to use and easy to extend/modify
-* Every important system is registered as a serivice and can be easily replaced or changed
-* Uses Redis as a fast and persistent database
+* simple to use and easy to extend/modify
+* every important system is registered as a serivice and can be easily replaced or changed
+* uses Redis as a fast and persistent database
 
 ## Getting started
 
