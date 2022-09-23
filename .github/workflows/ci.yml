@@ -34,7 +34,7 @@ jobs:
       run: dotnet build ./src --configuration Release --no-restore
     
     - name: Unit
-      run: dotnet test ./tests/JAYQ.Tests.Unit/JAYQ.Tests.Unit.csproj --no-restore --verbosity normal
+      run: dotnet test ./tests/YAJQ.Tests.Unit/YAJQ.Tests.Unit.csproj --no-restore --verbosity normal
       
     - name: Integration
-      run: dotnet test ./tests/JAYQ.Tests.Integration/JAYQ.Tests.Integration.csproj --no-restore --verbosity normal
+      run: dotnet test ./tests/YAJQ.Integration.Unit/YAJQ.Tests.Integration.csproj --no-restore --verbosity normal
