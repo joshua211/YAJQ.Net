@@ -61,7 +61,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
             var result = await repository.TryGetAndMarkJobAsync(nextJob, HandlerId);
             if (!result.WasSuccess)
             {
-                LogTrace("Job with id {Id} was already claimed, skipping", nextJob);
+                LogTrace("Job with id {Id} was already claimed, skipping", nextJob.Id);
                 continue;
             }
 
@@ -69,7 +69,7 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
 
             if (result.Value.JobType == JobType.Scheduled)
             {
-                LogTrace("Scheduled job, adding to backlog");
+                LogTrace("{Id} is a scheduled job, adding to backlog", result.Value.Id);
                 subHandler.AddScheduledJob(result.Value);
                 continue;
             }
