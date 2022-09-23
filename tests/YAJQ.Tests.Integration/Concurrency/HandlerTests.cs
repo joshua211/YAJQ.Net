@@ -41,7 +41,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         var ids = await PublishLongRunningJobs(2);
-        await WaitForCompletionAsync(ids, 5000);
+        await WaitForCompletionAsync(ids);
 
         //Assert
         CallReceiver.WasCalledXTimes(ids[0]).Should().BeTrue();
@@ -95,7 +95,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         StartJobHandler(FirstJobHandler, cts.Token);
-        await WaitForCompletionAsync(id, 10000);
+        await WaitForCompletionAsync(id);
 
         //Assert
         CallReceiver.WasCalledXTimes(id).Should().BeTrue();
@@ -114,7 +114,7 @@ public class HandlerTests : ConcurrencyTest
 
         //Act
         StartJobHandler(FirstJobHandler, cts.Token);
-        await WaitForCompletionAsync(id, 10000);
+        await WaitForCompletionAsync(id);
 
         //Assert
         CallReceiver.WasCalledXTimes(id).Should().BeTrue();

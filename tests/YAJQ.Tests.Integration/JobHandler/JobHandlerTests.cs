@@ -52,7 +52,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         var ids = await PublishJobs(12);
-        await WaitForCompletionAsync(ids.ToList(), 5000);
+        await WaitForCompletionAsync(ids.ToList());
 
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
@@ -114,7 +114,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), DateTimeOffset.Now, jobId);
-        await WaitForCompletionAsync(jobId, 10000);
+        await WaitForCompletionAsync(jobId);
 
         //Assert
         CallReceiver.WasCalledXTimes(jobId).Should().BeTrue();
@@ -127,7 +127,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         var ids = await ScheduleJobs(12);
-        await WaitForCompletionAsync(ids.ToList(), 10000);
+        await WaitForCompletionAsync(ids.ToList());
 
         //Assert
         ids.Should().AllSatisfy(i => CallReceiver.WasCalledXTimes(i).Should().BeTrue());
@@ -142,7 +142,7 @@ public class JobHandlerTests : IntegrationTest
 
         //Act
         await JobQueue.ScheduleJobAsync(() => Service.DoAsync(jobId), scheduledTime, jobId);
-        await WaitForCompletionAsync(jobId, 10000);
+        await WaitForCompletionAsync(jobId);
 
         //Assert
         CallReceiver.WasCalledAt(jobId, scheduledTime).Should().BeTrue();

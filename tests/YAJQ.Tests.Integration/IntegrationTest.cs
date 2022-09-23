@@ -122,12 +122,12 @@ public abstract class IntegrationTest : IDisposable
         return ids;
     }
 
-    public async Task WaitForCompletionAsync(string jobId, int maxWaitTime = 4000)
+    public async Task WaitForCompletionAsync(string jobId)
     {
-        await WaitForCompletionAsync(new List<string> {jobId}, maxWaitTime);
+        await WaitForCompletionAsync(new List<string> {jobId});
     }
 
-    public async Task WaitForCompletionAsync(List<string> ids, int maxWaitTime = 2000)
+    public async Task WaitForCompletionAsync(List<string> ids)
     {
         var tries = 0;
         IEnumerable<string> completedIds;
@@ -136,7 +136,7 @@ public abstract class IntegrationTest : IDisposable
             await Task.Delay(100);
             tries++;
             completedIds = (await Archive.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
-            if (tries * 100 % maxWaitTime == 0)
+            if (tries * 100 % 60000 == 0)
             {
                 testLogger.Log("TIMEOUT");
                 break;
