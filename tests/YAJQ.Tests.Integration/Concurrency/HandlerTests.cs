@@ -84,25 +84,6 @@ public class HandlerTests : ConcurrencyTest
     }
 
     [Fact]
-    public async Task AllHandlersCanHandleJobsAtTheSameTime()
-    {
-        //Arrange
-        var cts = new CancellationTokenSource();
-        StartJobHandler(FirstJobHandler, cts.Token);
-        StartJobHandler(SecondJobHandler, cts.Token);
-
-        //Act
-        var ids = await PublishLongRunningJobs(5);
-        await WaitForCompletionAsync(ids.ToList(), 20000);
-        var archived = await Archive.GetArchivedJobsAsync();
-
-        //Assert
-        archived.Value.Should().Contain(job => job.HandlerId == FirstJobHandler.HandlerId);
-        archived.Value.Should().Contain(job => job.HandlerId == SecondJobHandler.HandlerId);
-        cts.Cancel();
-    }
-
-    [Fact]
     public async Task HandlerCanCompleteInstantJobThatNeverGotExecuted()
     {
         //Arrange
