@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace YAJQ.Core.Utils;
 
@@ -11,7 +12,7 @@ public class ModuleHelper : IModuleHelper
 {
     public bool IsModuleLoaded(string moduleName)
     {
-        return Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
-            .Any(m => m.ModuleName == moduleName);
+        return AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetLoadedModules())
+            .Any(m => m.Name == moduleName);
     }
 }
