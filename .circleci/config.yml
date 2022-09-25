@@ -20,7 +20,4 @@ jobs:
 workflows:
   ci:
     jobs:
-      - test:
-          filters:
-            branches:
-              only: master
+      - test
