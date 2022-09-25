@@ -1,0 +1,23 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
+
+    steps:
+      - checkout
+      - run:
+          name: "Install project dependencies"
+          command: dotnet restore ./src
+      - run:
+          name: "Unit Tests"
+          command: dotnet test ./tests/YAJQ.Tests.Unit/YAJQ.Tests.Unit.csproj --no-restore --verbosity normal
+      - run:
+          name: "Integration Tests"
+          command: dotnet test ./tests/YAJQ.Tests.Integration/YAJQ.Tests.Integration.csproj --no-restore --verbosity normal
+
+workflows:
+  ci:
+    jobs:
+      - test
