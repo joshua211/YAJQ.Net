@@ -1,7 +1,7 @@
 # Yet Another Job Queue (YAJQ)
 
-[![ci](https://github.com/joshua211/YAJQ.Net/actions/workflows/ci.yml/badge.svg)](https://github.com/joshua211/YAJQ.Net/actions/workflows/ci.yml)
-[![cd](https://github.com/joshua211/YAJQ.Net/actions/workflows/cd.yml/badge.svg)](https://github.com/joshua211/YAJQ.Net/actions/workflows/cd.yml)
+![CircleCI](https://img.shields.io/circleci/build/github/joshua211/YAJQ.Net/master?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/joshua211/YAJQ.net/cd?label=deploy&style=flat-square)
 ![Nuget](https://img.shields.io/nuget/v/YAJQ.Core?style=flat-square)
 <br/>
 **Preview/Prototype**
