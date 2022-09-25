@@ -2,7 +2,7 @@
 
 ![CircleCI](https://img.shields.io/circleci/build/github/joshua211/YAJQ.Net/master?style=flat-square)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/joshua211/YAJQ.net/cd?label=deploy&style=flat-square)
-![Nuget](https://img.shields.io/nuget/v/YAJQ.Core?style=flat-square)
+[![Nuget](https://img.shields.io/nuget/v/YAJQ.Core?style=flat-square)](https://www.nuget.org/packages/YAJQ.Core)
 <br/>
 **Preview/Prototype**
 
