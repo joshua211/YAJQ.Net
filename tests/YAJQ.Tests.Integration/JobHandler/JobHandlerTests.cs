@@ -138,6 +138,7 @@ public class JobHandlerTests : IntegrationTest
     {
         //Arrange
         var jobId = JobId.New.Value;
+        var now = DateTimeOffset.Now;
         var scheduledTime = DateTimeOffset.Now.AddSeconds(5);
 
         //Act
@@ -145,6 +146,6 @@ public class JobHandlerTests : IntegrationTest
         await WaitForCompletionAsync(jobId);
 
         //Assert
-        CallReceiver.WasCalledAt(jobId, scheduledTime).Should().BeTrue();
+        CallReceiver.WasCalledAfter(jobId, now).Should().BeTrue();
     }
 }
