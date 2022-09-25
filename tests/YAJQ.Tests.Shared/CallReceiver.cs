@@ -32,10 +32,10 @@ public static class CallReceiver
         return false;
     }
 
-    public static bool WasCalledAt(string id, DateTimeOffset time)
+    public static bool WasCalledAfter(string id, DateTimeOffset time)
     {
         if (ReceivedCalls.TryGetValue(id, out var call))
-            return call.LastCall.ToUnixTimeSeconds() - time.ToUnixTimeSeconds() < 2;
+            return call.LastCall.ToUnixTimeSeconds() > time.ToUnixTimeSeconds();
 
         return false;
     }
