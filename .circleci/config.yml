@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  test:
+  test: 
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
 
@@ -20,4 +20,7 @@ jobs:
 workflows:
   ci:
     jobs:
-      - test
+      - test:
+          filters:
+            branches:
+              only: master
