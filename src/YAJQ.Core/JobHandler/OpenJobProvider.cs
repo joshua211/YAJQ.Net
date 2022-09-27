@@ -10,6 +10,7 @@ public class OpenJobProvider : IOpenJobProvider
     private readonly ILogger<OpenJobProvider> logger;
     private readonly YAJQOptions options;
     private readonly IJobRepository repository;
+    private string? lastId;
 
     public OpenJobProvider(IJobRepository repository, ILogger<OpenJobProvider> logger, YAJQOptions options)
     {
@@ -38,6 +39,14 @@ public class OpenJobProvider : IOpenJobProvider
 
                 continue;
             }
+
+            if (lastId == nextPersistedJob.Value.Id)
+            {
+                LogTrace(handlerId, "Throttling for job {Id}", lastId);
+                await Task.Delay(options.SameJobThrottling, cancellationToken);
+            }
+
+            lastId = nextPersistedJob.Value.Id;
 
             if (nextPersistedJob.Value.JobType == JobType.Scheduled)
             {
