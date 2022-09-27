@@ -51,20 +51,28 @@ public class OpenJobProvider : IOpenJobProvider
             if (nextPersistedJob.Value.JobType == JobType.Scheduled)
             {
                 if (IsHandlerResponsibleForJob(handlerId, nextPersistedJob.Value))
-                    //This handler is already responsible for this job, no need to do anything
+                {
+                    LogTrace(handlerId, "This Handler is already responsible for this scheduled job");
                     continue;
+                }
 
                 if (!IsUpdateOverdue(nextPersistedJob.Value))
-                    //Another handler is responsible and keeps updating the job
+                {
+                    LogTrace(handlerId, "Another Handler is already responsible and keeps updating this scheduled job");
                     continue;
+                }
             }
             else
             {
                 if (nextPersistedJob.Value.State != JobState.Pending ||
                     !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyToken) &&
                     !IsUpdateOverdue(nextPersistedJob.Value))
+                {
                     //Another handler is already handling this job or it was already handled
+                    LogTrace(handlerId,
+                        "Another Handler is already responsible for this job or it was already handled");
                     continue;
+                }
 
                 //TODO handle instant job that is already handled but processing takes longer than MaxOverdueTimeout
             }

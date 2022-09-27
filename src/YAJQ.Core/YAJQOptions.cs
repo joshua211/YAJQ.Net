@@ -39,7 +39,7 @@ public class YAJQOptions
     public int ScheduledJobTimerInterval { get; set; } = 1000;
 
     /// <summary>
-    ///     The time (in ms) to wait if the same job is processed again (Only one job in the database)
+    ///  The time (in ms) to wait if the same job is processed again (Only one job in the database)
     /// </summary>
     public int SameJobThrottling { get; set; } = 100;
 }
