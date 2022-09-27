@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using YAJQ.Core.JobHandler.Interfaces;
-using YAJQ.Core.JobProcessor;
 using YAJQ.Core.JobProcessor.Interfaces;
 using YAJQ.Core.Persistence;
 using YAJQ.Core.Persistence.Interfaces;
@@ -116,20 +115,5 @@ public class MultiProcessorJobHandler : IJobHandler, IDisposable
     private void LogTrace(string message, params object[] args)
     {
         logger.LogTrace($"[{HandlerId}]: " + message, args);
-    }
-
-    private void LogWarning(string message, params object[] args)
-    {
-        logger.LogWarning($"[{HandlerId}]: " + message, args);
-    }
-
-    private bool IsHandlerResponsibleForJob(PersistedJob job)
-    {
-        return job.ConcurrencyToken == HandlerId;
-    }
-
-    private bool IsUpdateOverdue(PersistedJob job)
-    {
-        return DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
     }
 }
