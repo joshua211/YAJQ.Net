@@ -148,7 +148,7 @@ public class MemoryPersistence : IJobPersistence
             if (cursor.MaxCursor == 0)
                 return Task.FromResult<ExecutionResult<PersistedJob>>(Error.CursorOutOfRange());
 
-            var job = jobs[cursor.CurrentCursor - 1];
+            var job = jobs[cursor.CurrentCursor];
             cursor = cursor.Increase();
 
             return Task.FromResult<ExecutionResult<PersistedJob>>(job.DeepCopy());

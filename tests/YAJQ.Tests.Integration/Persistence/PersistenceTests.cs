@@ -19,14 +19,15 @@ public abstract class PersistenceTests : IntegrationTest
     public async Task CanSaveJob()
     {
         //Arrange
-        var wasSaved = false;
-        Persistence.NewJob += (s, e) => wasSaved = true;
+        var id = JobId.New;
 
         //Act
-        await Repository.AddJobAsync(AsyncService.Descriptor());
+        await Repository.AddJobAsync(AsyncService.Descriptor(), id);
 
         //Assert
-        wasSaved.Should().BeTrue();
+        var job = (await Repository.GetJobAsync(id));
+        job.WasSuccess.Should().BeTrue();
+        job.Value.Id.Should().Be(id);
     }
 
     [Fact]
@@ -120,6 +121,6 @@ public abstract class PersistenceTests : IntegrationTest
 
         //Assert
         result.WasSuccess.Should().BeTrue();
-        result.Value.CurrentCursor.Should().Be(2);
+        result.Value.CurrentCursor.Should().Be(1);
     }
 }

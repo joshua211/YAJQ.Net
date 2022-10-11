@@ -51,7 +51,7 @@ public class RemoveAllJobsTests : TestBase
         //Arrange
         var cursor = await pers.GetCursorAsync();
         cursor.WasSuccess.Should().BeTrue();
-        cursor.Value.CurrentCursor.Should().Be(0);
+        cursor.Value.CurrentCursor.Should().Be(-1);
         cursor.Value.MaxCursor.Should().Be(0);
     }
 }
