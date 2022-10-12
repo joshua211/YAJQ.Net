@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text.Json;
+﻿using Newtonsoft.Json;
 using StackExchange.Redis;
 using YAJQ.Core.JobQueue;
 using YAJQ.Core.Persistence;
@@ -12,7 +11,7 @@ public class HashSerializer : IHashSerializer
     {
         var entries = new HashEntry[8];
         entries[0] = new HashEntry(nameof(job.Id), job.Id.Value);
-        entries[1] = new HashEntry(nameof(job.Descriptor), JsonSerializer.Serialize(job.Descriptor));
+        entries[1] = new HashEntry(nameof(job.Descriptor), JsonConvert.SerializeObject(job.Descriptor));
         entries[2] = new HashEntry(nameof(job.CreationTime), job.CreationTime.ToString("O"));
         entries[3] = new HashEntry(nameof(job.ScheduledTime), job.ScheduledTime.ToString("O"));
         entries[4] = new HashEntry(nameof(job.LastUpdated), job.LastUpdated.ToString("O"));
@@ -27,7 +26,8 @@ public class HashSerializer : IHashSerializer
     {
         var id = JobId.With(hash.First(h => h.Name == nameof(PersistedJob.Id)).Value);
         var descriptor =
-            JsonSerializer.Deserialize<JobDescriptor>(hash.First(h => h.Name == nameof(PersistedJob.Descriptor)).Value);
+            JsonConvert.DeserializeObject<JobDescriptor>(
+                hash.First(h => h.Name == nameof(PersistedJob.Descriptor)).Value);
         var crTime = DateTimeOffset.Parse(hash.First(h => h.Name == nameof(PersistedJob.CreationTime)).Value);
         var scheduledTime = DateTimeOffset.Parse(hash.First(h => h.Name == nameof(PersistedJob.ScheduledTime)).Value);
         var lastUpdated = DateTimeOffset.Parse(hash.First(h => h.Name == nameof(PersistedJob.LastUpdated)).Value);
@@ -50,7 +50,8 @@ public class HashSerializer : IHashSerializer
     public JobCursor DeserializeCursor(HashEntry[] hash)
     {
         var current = (int) hash.First(h => h.Name == nameof(JobCursor.CurrentCursor)).Value;
-        var max = (int) hash.First(h => h.Name == nameof(JobCursor.MaxCursor)).Value;;
+        var max = (int) hash.First(h => h.Name == nameof(JobCursor.MaxCursor)).Value;
+        ;
 
         return JobCursor.With(current, max);
     }

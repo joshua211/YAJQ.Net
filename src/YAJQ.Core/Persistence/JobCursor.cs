@@ -15,7 +15,11 @@ public class JobCursor
     public int MaxCursor { get; private set; }
 
     public static JobCursor Empty => new(-1, 0);
-    public static JobCursor With(int current, int max) => new(current, max);
+
+    public static JobCursor With(int current, int max)
+    {
+        return current == 0 && max == 0 ? Empty : new JobCursor(current, max);
+    }
 
     public JobCursor Increase()
     {

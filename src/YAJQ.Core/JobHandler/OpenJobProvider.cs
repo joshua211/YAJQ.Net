@@ -28,6 +28,7 @@ public class OpenJobProvider : IOpenJobProvider
             var nextPersistedJob = await repository.GetNextJobAsync();
             if (!nextPersistedJob.WasSuccess)
             {
+                //TODO check if error was something else than nojobatcursor
                 LogTrace(handlerId, "No job in the database, waiting for {Timeout} ms", options.HandlerTimeout);
 
                 await Task.Delay(options.HandlerTimeout, wakeupTokenSource.Token).ContinueWith(t =>
@@ -51,6 +52,10 @@ public class OpenJobProvider : IOpenJobProvider
             }
             else
             {
+                if (IsHandlerResponsibleForJob(handlerId, nextPersistedJob.Value) &&
+                    !IsUpdateOverdue(nextPersistedJob.Value))
+                    continue;
+
                 if (nextPersistedJob.Value.State != JobState.Pending ||
                     !string.IsNullOrWhiteSpace(nextPersistedJob.Value.ConcurrencyToken) &&
                     !IsUpdateOverdue(nextPersistedJob.Value))
@@ -73,7 +78,8 @@ public class OpenJobProvider : IOpenJobProvider
 
     private bool IsUpdateOverdue(PersistedJob job)
     {
-        return DateTimeOffset.Now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
+        var now = DateTimeOffset.Now;
+        return now > job.LastUpdated.AddSeconds(options.MaxOverdueTimeout);
     }
 
     private void LogTrace(string handlerId, string message, params object[] args)

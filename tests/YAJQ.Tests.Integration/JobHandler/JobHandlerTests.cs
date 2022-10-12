@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
-using YAJQ.Core.Archive.Interfaces;
 using YAJQ.Core.Persistence;
-using YAJQ.Core.Persistence.Interfaces;
-using YAJQ.Persistence.Memory;
 using YAJQ.Tests.Shared;
 
 namespace YAJQ.Tests.Integration.JobHandler;
 
-public class JobHandlerTests : IntegrationTest
+public abstract class JobHandlerTests : IntegrationTest
 {
     private ITestOutputHelper helper;
 
@@ -22,13 +18,6 @@ public class JobHandlerTests : IntegrationTest
     {
         helper = outputHelper;
         StartJobHandler();
-    }
-
-    protected override IServiceCollection Configure(IServiceCollection collection)
-    {
-        collection.AddSingleton<IJobPersistence, MemoryPersistence>();
-        collection.AddSingleton<IJobArchive, MemoryArchive>();
-        return base.Configure(collection);
     }
 
     [Fact]
