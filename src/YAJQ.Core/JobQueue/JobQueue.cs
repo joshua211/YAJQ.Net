@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using YAJQ.Core.Common;
 using YAJQ.Core.JobQueue.Interfaces;
 using YAJQ.Core.Persistence;
