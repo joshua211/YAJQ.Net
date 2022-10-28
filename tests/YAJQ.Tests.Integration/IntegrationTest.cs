@@ -136,7 +136,7 @@ public abstract class IntegrationTest : IDisposable
             await Task.Delay(100);
             tries++;
             completedIds = (await Archive.GetArchivedJobsAsync()).Value.Select(j => j.Id.Value);
-            if (tries * 100 % 60000 == 0)
+            if (tries * 100 % 30000 == 0)
             {
                 testLogger.Log("TIMEOUT");
                 break;

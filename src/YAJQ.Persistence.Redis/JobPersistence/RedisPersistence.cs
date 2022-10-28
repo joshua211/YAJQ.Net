@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using YAJQ.Core.Archive.Interfaces;
 using YAJQ.Core.Common;
@@ -17,12 +18,14 @@ public class RedisPersistence : IJobPersistence, IDisposable
     private readonly IDatabase database;
     private readonly IHashSerializer hashSerializer;
     private readonly IJobArchive archive;
+    private readonly ILogger<RedisPersistence> logger;
 
     public RedisPersistence(IConnectionMultiplexer multiplexer, IHashSerializer hashSerializer,
-        IJobArchive archive)
+        IJobArchive archive, ILogger<RedisPersistence> logger)
     {
         this.hashSerializer = hashSerializer;
         this.archive = archive;
+        this.logger = logger;
         database = multiplexer.GetDatabase();
         multiplexer.GetSubscriber().Subscribe(ChannelId, OnNewChannelMessage);
     }
@@ -37,7 +40,7 @@ public class RedisPersistence : IJobPersistence, IDisposable
         transaction.ListRightPushAsync(JobListId, persistedJob.Id.Value);
         transaction.HashSetAsync(persistedJob.Id.Value, hash);
         var result = await transaction.ExecuteAsync();
-        
+
         if (result)
             await database.Multiplexer.GetSubscriber().PublishAsync(ChannelId, persistedJob.Id.Value);
 
@@ -79,15 +82,18 @@ public class RedisPersistence : IJobPersistence, IDisposable
 
     public async Task<ExecutionResult<Success>> RemoveJobAsync(string jobId)
     {
-        var listRemove = await database.ListRemoveAsync(JobListId, jobId);
-        var hashRemove = await database.KeyDeleteAsync(jobId);
+        var trans = database.CreateTransaction();
+        trans.ListRemoveAsync(JobListId, jobId);
+        trans.KeyDeleteAsync(jobId);
+        var result = await trans.ExecuteAsync();
 
-        return listRemove > 0 && hashRemove ? new Success() : Error.StorageError();
+        return result ? new Success() : Error.StorageError();
     }
 
     public async Task<ExecutionResult<Success>> RemoveAllJobsAsync()
     {
         database.KeyDelete(JobListId);
+        //TODO delete all job hashes
 
         return new Success();
     }
@@ -111,9 +117,12 @@ public class RedisPersistence : IJobPersistence, IDisposable
         var trans = database.CreateTransaction();
         trans.AddCondition(
             Condition.StringEqual(CursorId, cursor.Value.CurrentCursor));
+        trans.AddCondition(Condition.ListLengthEqual(JobListId, cursor.Value.MaxCursor));
         trans.StringSetAsync(CursorId, newCursor.CurrentCursor.ToString());
-        
+
         var result = await trans.ExecuteAsync();
+        if(result)
+            logger.LogTrace("Increased cursor from {OldCursor} to {NewCursor}", cursor.Value, newCursor );
 
         return result ? newCursor : Error.OutdatedUpdate();
     }
@@ -136,12 +145,14 @@ public class RedisPersistence : IJobPersistence, IDisposable
 
     public async Task<ExecutionResult<JobCursor>> GetCursorAsync()
     {
-        await database.StringSetAsync(CursorId, 0, when:When.NotExists);
-        
-        var current = (int)(await database.StringGetAsync(CursorId));
-        var max = (int)(await database.ListLengthAsync(JobListId));
-        
-        var cursor = JobCursor.With(current, max);
+        await database.StringSetAsync(CursorId, 0, when: When.NotExists);
+
+        var trans = database.CreateTransaction();
+        var current =  trans.StringGetAsync(CursorId);
+        var max = trans.ListLengthAsync(JobListId);
+        await trans.ExecuteAsync();
+
+        var cursor = JobCursor.With((int)current.Result, (int)max.Result);
 
         return cursor;
     }

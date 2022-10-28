@@ -18,6 +18,11 @@ public class JobCursor
 
     public static JobCursor With(int current, int max)
     {
+        if (current == max && max >= 1)
+            return new JobCursor(current - 1, max);
+        if (current > max)
+            return new JobCursor(0, max);
+        
         return current == 0 && max == 0 ? Empty : new JobCursor(current, max);
     }
 

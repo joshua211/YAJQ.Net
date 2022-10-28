@@ -28,7 +28,7 @@ public class RedisJobHandlerTests : JobHandlerTests
     protected override IServiceCollection Configure(IServiceCollection collection)
     {
         container.StartAsync().Wait();
-        multiplexer = ConnectionMultiplexer.Connect(container.ConnectionString);
+        multiplexer = ConnectionMultiplexer.Connect(container.ConnectionString, options => options.AbortOnConnectFail=false);
         collection.AddSingleton<IJobPersistence, RedisPersistence>();
         collection.AddSingleton<IJobArchive, MemoryArchive>();
         collection.AddScoped<IHashSerializer, HashSerializer>();
